@@ -31,7 +31,7 @@ WebSocket 연결들을 룸 단위로 관리하는 중앙 허브(Hub). 고객(cus
 // 신규 외부 패키지 추가 필요
 // go get github.com/gorilla/websocket
 import (
-    "co-browsing-session-server/internal/store"
+    "co-browsing-session-server/internal/repository"
     "github.com/gorilla/websocket"
     "sync"
 )

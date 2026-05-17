@@ -30,7 +30,7 @@
 ```go
 import (
     "co-browsing-session-server/internal/hub"
-    "co-browsing-session-server/internal/store"
+    "co-browsing-session-server/internal/repository"
     "co-browsing-session-server/internal/model"
     "encoding/json"
     "github.com/gin-gonic/gin"
@@ -125,9 +125,9 @@ Connection: Upgrade
 ### 핸들러 생성자
 
 ```go
-func NewWebSocketHandler(h *hub.Hub, s *store.SessionStore) gin.HandlerFunc
+func NewWebSocketHandler(h *hub.Hub, s *repository.SessionStore) gin.HandlerFunc
 
-func RegisterWebSocketRoutes(router *gin.Engine, h *hub.Hub, s *store.SessionStore)
+func RegisterWebSocketRoutes(router *gin.Engine, h *hub.Hub, s *repository.SessionStore)
 ```
 
 ---

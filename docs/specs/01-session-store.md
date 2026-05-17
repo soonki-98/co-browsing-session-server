@@ -42,9 +42,9 @@ import (
 ## Data Structures
 
 ```go
-// internal/store/session.go
+// internal/repository/session.go
 
-package store
+package repository
 
 import (
     "sync"
@@ -78,6 +78,7 @@ func NewSessionStore() *SessionStore {
         sessions: make(map[string]*Session),
     }
 }
+
 ```
 
 ---
@@ -162,9 +163,7 @@ var (
 
 | 작업 | 파일 |
 |------|------|
-| 신규 생성 | `internal/store/session.go` |
-
-`internal/repository/` 디렉토리는 비어 있으므로 새 `internal/store/` 패키지 사용.
+| 신규 생성 | `internal/repository/session.go` |
 
 ---
 

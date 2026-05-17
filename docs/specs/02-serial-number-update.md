@@ -30,7 +30,7 @@
 ```go
 // 신규 외부 패키지 없음
 import (
-    "co-browsing-session-server/internal/store"
+    "co-browsing-session-server/internal/repository"
     "co-browsing-session-server/internal/service"
     "net/http"
     "github.com/gin-gonic/gin"
@@ -76,10 +76,10 @@ Response 500 Internal Server Error:
 func createSerialNumberHandler(c *gin.Context)
 
 // 변경 후: store를 클로저로 주입
-func NewSerialNumberHandler(store *store.SessionStore) gin.HandlerFunc
+func NewSerialNumberHandler(store *repository.SessionStore) gin.HandlerFunc
 
 // RegisterSerialNumberRoutes도 store를 받도록 변경
-func RegisterSerialNumberRoutes(router *gin.Engine, store *store.SessionStore)
+func RegisterSerialNumberRoutes(router *gin.Engine, store *repository.SessionStore)
 ```
 
 ---
@@ -105,7 +105,7 @@ func RegisterSerialNumberRoutes(router *gin.Engine, store *store.SessionStore)
 
 ```go
 // main.go: SessionStore를 생성하고 핸들러에 주입
-sessionStore := store.NewSessionStore()
+sessionStore := repository.NewSessionStore()
 handler.RegisterSerialNumberRoutes(router, sessionStore)
 handler.RegisterPingRoutes(router)
 ```
@@ -118,7 +118,7 @@ handler.RegisterPingRoutes(router)
 |------|------|
 | 수정 | `internal/handler/serial_number.go` |
 | 수정 | `main.go` (store 초기화 및 주입) |
-| 신규 생성됨 (spec #1) | `internal/store/session.go` |
+| 신규 생성됨 (spec #1) | `internal/repository/session.go` |
 
 `internal/service/serial_number.go`는 변경 없음.
 
