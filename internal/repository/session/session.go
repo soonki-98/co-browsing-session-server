@@ -11,22 +11,15 @@ func NewSessionStore() *SessionStore {
 	}
 }
 
-func (s *SessionStore) Create(serial string) (*model.Session, error) {
+func (s *SessionStore) Create(session *model.Session) (*model.Session, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if _, exist := s.sessions[serial]; exist {
+	if _, exist := s.sessions[session.Serial]; exist {
 		return nil, ErrSessionExists
 	}
 
-	session := &model.Session{
-		Serial:    serial,
-		Status:    model.StatusWaiting,
-		CreateAt:  time.Now(),
-		ExpiresAt: time.Now().Add(SessionTTL),
-	}
-
-	s.sessions[serial] = session
+	s.sessions[session.Serial] = session
 
 	return session, nil
 }
