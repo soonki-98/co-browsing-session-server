@@ -1,17 +1,17 @@
 package session
 
 import (
-	"co-browsing-session-server/internal/model"
+	"co-browsing-session-server/internal/domain"
 	"time"
 )
 
 func NewSessionStore() *SessionStore {
 	return &SessionStore{
-		sessions: make(map[string]*model.Session),
+		sessions: make(map[domain.SerialNumber]*domain.Session),
 	}
 }
 
-func (s *SessionStore) Create(session *model.Session) (*model.Session, error) {
+func (s *SessionStore) Create(session *domain.Session) (*domain.Session, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -24,7 +24,7 @@ func (s *SessionStore) Create(session *model.Session) (*model.Session, error) {
 	return session, nil
 }
 
-func (s *SessionStore) Get(serial string) (*model.Session, error) {
+func (s *SessionStore) Get(serial domain.SerialNumber) (*domain.Session, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -41,7 +41,7 @@ func (s *SessionStore) Get(serial string) (*model.Session, error) {
 	return value, nil
 }
 
-func (s *SessionStore) UpdateStatus(serial string, status model.SessionStatus) (*model.Session, error) {
+func (s *SessionStore) UpdateStatus(serial domain.SerialNumber, status domain.SessionStatus) (*domain.Session, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -63,14 +63,14 @@ func (s *SessionStore) UpdateStatus(serial string, status model.SessionStatus) (
 		return nil, ErrInvalidTransition
 	}
 
-	if status == model.StatusActive {
+	if status == domain.StatusActive {
 		value.ExpiresAt = time.Time{}
 	}
 	value.Status = status
 	return value, nil
 }
 
-func (s *SessionStore) Delete(serial string) error {
+func (s *SessionStore) Delete(serial domain.SerialNumber) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

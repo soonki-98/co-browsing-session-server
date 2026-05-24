@@ -1,7 +1,7 @@
 package session
 
 import (
-	"co-browsing-session-server/internal/model"
+	"co-browsing-session-server/internal/domain"
 	"errors"
 	"sync"
 )
@@ -15,5 +15,5 @@ var (
 
 type SessionStore struct {
 	mu       sync.RWMutex
-	sessions map[string]*model.Session // key: serial number
+	sessions map[domain.SerialNumber]*domain.Session // key: serial number
 }

@@ -1,11 +1,13 @@
-package service
+package domain
 
 import (
 	"math/rand"
 	"time"
 )
 
-func generateRandomSerialNumber(length int) string {
+type SerialNumber string
+
+func GenerateRandomSerialNumber(length int) SerialNumber {
 	const CHARSET = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789"
 
 	// 시리얼 번호 생성 로직 (예: 랜덤 문자열 생성)
@@ -17,5 +19,5 @@ func generateRandomSerialNumber(length int) string {
 		b[i] = CHARSET[seededRand.Intn(len(CHARSET))]
 	}
 
-	return string(b)
+	return SerialNumber(b)
 }

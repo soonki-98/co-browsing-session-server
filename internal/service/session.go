@@ -2,16 +2,15 @@ package service
 
 import (
 	"co-browsing-session-server/internal/domain"
-	"co-browsing-session-server/internal/model"
 	"co-browsing-session-server/internal/repository/session"
 	"errors"
 )
 
-func CreateSession(store *session.SessionStore) (*model.Session, error) {
+func CreateSession(store *session.SessionStore) (*domain.Session, error) {
 	const maxRetries = 5
 
 	for range maxRetries {
-		serial := generateRandomSerialNumber(6)
+		serial := domain.GenerateRandomSerialNumber(6)
 		newSession := domain.CreateSession(serial)
 
 		s, err := store.Create(newSession)

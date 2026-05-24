@@ -1,19 +1,21 @@
 package session
 
-import "co-browsing-session-server/internal/model"
+import (
+	"co-browsing-session-server/internal/domain"
+)
 
-func isValidStatus(status model.SessionStatus) bool {
-	return status == model.StatusActive || status == model.StatusEnded || status == model.StatusWaiting
+func isValidStatus(status domain.SessionStatus) bool {
+	return status == domain.StatusActive || status == domain.StatusEnded || status == domain.StatusWaiting
 }
 
-func isValidStatusTransition(before model.SessionStatus, after model.SessionStatus) bool {
+func isValidStatusTransition(before domain.SessionStatus, after domain.SessionStatus) bool {
 	result := false
 
 	switch before {
-	case model.StatusWaiting:
-		return after == model.StatusActive || after == model.StatusEnded
-	case model.StatusActive:
-		return after == model.StatusEnded
+	case domain.StatusWaiting:
+		return after == domain.StatusActive || after == domain.StatusEnded
+	case domain.StatusActive:
+		return after == domain.StatusEnded
 	}
 
 	return result
