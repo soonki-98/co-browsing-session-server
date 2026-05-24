@@ -3,18 +3,22 @@ package service
 import (
 	"co-browsing-session-server/internal/model"
 	"co-browsing-session-server/internal/repository/session"
+	"errors"
 )
 
-func CreateSession(sessionStore *session.SessionStore) (*model.Session, error) {
-	const SERIAL_NUMBER_LENGTH = 6
+func CreateSession(store *session.SessionStore) (*model.Session, error) {
+	const maxRetries = 5
 
-	serialNumber := generateRandomSerialNumber(SERIAL_NUMBER_LENGTH)
-
-	s, err := sessionStore.Create(serialNumber)
-
-	if err != nil {
-		return nil, err
+	for range maxRetries {
+		serial := generateRandomSerialNumber(6)
+		s, err := store.Create(serial)
+		if err == nil {
+			return s, nil
+		}
+		if !errors.Is(err, session.ErrSessionExists) {
+			return nil, err
+		}
 	}
 
-	return s, nil
+	return nil, errors.New("failed to create session")
 }
