@@ -1,37 +1,39 @@
 package app
 
 import (
-	"co-browsing-session-server/internal/handler"
-	"co-browsing-session-server/internal/middleware"
-	"co-browsing-session-server/internal/repository/session"
-
 	"github.com/gin-gonic/gin"
+
+	"co-browsing-session-server/internal/domain/serialnumber"
+	"co-browsing-session-server/internal/infrastructure/memory"
+	httpiface "co-browsing-session-server/internal/interfaces/http"
+	sessionsvc "co-browsing-session-server/internal/services/session"
 )
 
 type App struct {
-	router       *gin.Engine
-	sessionStore *session.SessionStore
+	router *gin.Engine
 }
 
-func NewApp() *App {
-	app := &App{
-		router:       gin.New(),
-		sessionStore: session.NewSessionStore(),
-	}
+// New는 composition root다. 구체 타입을 만들어 생성자에 주입하고 라우터를 구성한다.
+// 의존성 변경(예: in-memory → Redis)은 이 함수만 수정하면 된다.
+func New() *App {
+	// domain
+	serialGen := serialnumber.NewRandomGenerator()
 
-	app.router.Use(gin.Logger(), gin.Recovery())
-	app.router.Use(middleware.InjectSessionStore(app.sessionStore))
+	// infrastructure
+	sessionRepo := memory.NewSessionRepository()
 
-	app.registerRoutes()
+	// application (use cases)
+	sessionService := sessionsvc.NewService(sessionRepo, serialGen)
 
-	return app
+	// interfaces (HTTP)
+	router := httpiface.NewRouter(
+		httpiface.NewSessionHandler(sessionService),
+		httpiface.NewPingHandler(),
+	)
+
+	return &App{router: router}
 }
 
-func (app *App) registerRoutes() {
-	handler.RegisterSerialNumberRoutes(app.router)
-	handler.RegisterPingRoutes(app.router)
-}
-
-func (app *App) Run(addr string) {
-	app.router.Run(addr)
+func (a *App) Run(addr string) error {
+	return a.router.Run(addr)
 }
