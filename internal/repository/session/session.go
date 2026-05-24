@@ -30,3 +30,49 @@ func (s *SessionStore) Create(serial string) (*model.Session, error) {
 
 	return session, nil
 }
+
+func (s *SessionStore) Get(serial string) (*model.Session, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	value, exist := s.sessions[serial]
+
+	if !exist {
+		return nil, ErrSessionNotFound
+	}
+
+	if !value.ExpiresAt.IsZero() && time.Now().After(value.ExpiresAt) {
+		return nil, ErrSessionExpired
+	}
+
+	return value, nil
+}
+
+func (s *SessionStore) UpdateStatus(serial string, status model.SessionStatus) (*model.Session, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	value, exist := s.sessions[serial]
+
+	if !exist {
+		return nil, ErrSessionNotFound
+	}
+
+	if !value.ExpiresAt.IsZero() && time.Now().After(value.ExpiresAt) {
+		return nil, ErrSessionExpired
+	}
+
+	if !isValidStatus(status) {
+		return nil, ErrInvalidTransition
+	}
+
+	if !isValidStatusTransition(value.Status, status) {
+		return nil, ErrInvalidTransition
+	}
+
+	if status == model.StatusActive {
+		value.ExpiresAt = time.Time{}
+	}
+	value.Status = status
+	return value, nil
+}
