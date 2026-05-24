@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func GenerateRandomSerialNumber(length int) string {
+func generateRandomSerialNumber(length int) string {
 	const CHARSET = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789"
 
 	// 시리얼 번호 생성 로직 (예: 랜덤 문자열 생성)
