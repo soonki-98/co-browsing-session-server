@@ -16,6 +16,6 @@ func GenerateRandomSerialNumber(length int) string {
 	for i := range b {
 		b[i] = CHARSET[seededRand.Intn(len(CHARSET))]
 	}
-	
+
 	return string(b)
 }
