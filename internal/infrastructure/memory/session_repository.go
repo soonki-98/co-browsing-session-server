@@ -18,15 +18,16 @@ func NewSessionRepository() *SessionRepository {
 	}
 }
 
-func (r *SessionRepository) Create(s *session.Session) error {
+func (r *SessionRepository) Create(s *session.Session) (*session.Session, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	if _, exist := r.sessions[s.Serial]; exist {
-		return session.ErrAlreadyExists
+		return nil, session.ErrAlreadyExists
 	}
 	r.sessions[s.Serial] = s
-	return nil
+
+	return s, nil
 }
 
 func (r *SessionRepository) Get(serial serialnumber.SerialNumber) (*session.Session, error) {
@@ -40,15 +41,16 @@ func (r *SessionRepository) Get(serial serialnumber.SerialNumber) (*session.Sess
 	return s, nil
 }
 
-func (r *SessionRepository) Save(s *session.Session) error {
+func (r *SessionRepository) Update(s *session.Session) (*session.Session, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	if _, exist := r.sessions[s.Serial]; !exist {
-		return session.ErrNotFound
+		return nil, session.ErrNotFound
 	}
 	r.sessions[s.Serial] = s
-	return nil
+
+	return s, nil
 }
 
 func (r *SessionRepository) Delete(serial serialnumber.SerialNumber) error {

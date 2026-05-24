@@ -29,7 +29,7 @@ func (s *Service) Create(ctx context.Context) (*sessiondomain.Session, error) {
 		serial := s.gen.Generate(serialLength)
 		newSession := sessiondomain.New(serial)
 
-		if err := s.repo.Create(newSession); err == nil {
+		if _, err := s.repo.Create(newSession); err == nil {
 			return newSession, nil
 		} else if !errors.Is(err, sessiondomain.ErrAlreadyExists) {
 			return nil, fmt.Errorf("create session: %w", err)

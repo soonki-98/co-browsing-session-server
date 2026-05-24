@@ -5,8 +5,8 @@ import "co-browsing-session-server/internal/domain/serialnumber"
 // Repository는 Session aggregate의 저장 계약(port)이다.
 // 구현체는 infrastructure 레이어에 둔다.
 type Repository interface {
-	Create(s *Session) error
+	Create(s *Session) (*Session, error)
 	Get(serial serialnumber.SerialNumber) (*Session, error)
-	Save(s *Session) error
+	Update(s *Session) (*Session, error)
 	Delete(serial serialnumber.SerialNumber) error
 }
