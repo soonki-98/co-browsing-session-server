@@ -31,11 +31,13 @@ WebSocket 연결들을 룸 단위로 관리하는 중앙 허브(Hub). 고객(cus
 // 신규 외부 패키지 추가 필요
 // go get github.com/gorilla/websocket
 import (
-    "co-browsing-session-server/internal/repository"
-    "github.com/gorilla/websocket"
     "sync"
+
+    "github.com/gorilla/websocket"
 )
 ```
+
+Hub는 self-contained — 도메인이나 인프라를 참조하지 않는다. serial 유효성 검증은 호출자(WS 핸들러)가 `repo.Get`으로 먼저 검사한 뒤 JoinRoom에 넘긴다. Hub는 serial을 opaque key로만 다룬다.
 
 `go.mod`에 `github.com/gorilla/websocket v1.5.3` 추가.
 
@@ -44,12 +46,13 @@ import (
 ## Data Structures
 
 ```go
-// internal/hub/hub.go
+// internal/services/hub/hub.go
 
 package hub
 
 import (
     "sync"
+
     "github.com/gorilla/websocket"
 )
 
@@ -96,13 +99,14 @@ func NewHub() *Hub {
 // Hub 메서드 시그니처
 
 // JoinRoom: 클라이언트를 룸에 추가. 룸이 없으면 생성.
-// 동일 role이 이미 접속 중이면 기존 연결 종료 후 교체.
-// 반환: 상대방 클라이언트 (nil이면 아직 미접속)
-func (h *Hub) JoinRoom(serial string, client *Client) (peer *Client, err error)
+// 동일 role이 이미 접속 중이면 기존 연결을 Close()한 뒤 교체.
+// 반환: 상대 role 클라이언트 (nil이면 아직 미접속)
+// Hub는 self-contained이므로 별도 error는 반환하지 않는다(호출자가 사전 검증).
+func (h *Hub) JoinRoom(serial string, client *Client) (peer *Client)
 
 // LeaveRoom: 클라이언트를 룸에서 제거.
 // 룸에 아무도 없으면 룸 삭제.
-// 반환: 상대방 클라이언트 (peer-left 알림 전송용)
+// 반환: 상대방 클라이언트 (peer-left 알림 전송용, nil 가능)
 func (h *Hub) LeaveRoom(client *Client) (peer *Client)
 
 // GetRoom: 룸 조회. 없으면 nil 반환.
@@ -148,12 +152,7 @@ func (h *Hub) GetPeer(client *Client) *Client
 
 ### 에러 타입
 
-```go
-var (
-    ErrRoomNotFound  = errors.New("room not found")
-    ErrSerialInvalid = errors.New("serial number not in session store")
-)
-```
+Hub는 self-contained이며 외부에 노출하는 에러 sentinel을 두지 않는다. 룸/peer 조회 실패는 nil 반환으로 신호한다. serial 유효성 검증은 호출자(WS 핸들러)가 `repo.Get`으로 사전 수행한다.
 
 ---
 
@@ -161,9 +160,9 @@ var (
 
 | 작업 | 파일 |
 |------|------|
-| 신규 생성 | `internal/hub/hub.go` |
+| 신규 생성 | `internal/services/hub/hub.go` |
 | 수정 | `go.mod` (gorilla/websocket 추가) |
-| 수정 | `main.go` (Hub 초기화 및 핸들러 주입) |
+| 수정 | `internal/app/app.go` (composition root에서 Hub 생성 및 WS 핸들러에 주입) |
 
 ---
 

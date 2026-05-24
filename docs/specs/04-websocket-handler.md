@@ -28,30 +28,35 @@
 ## Dependencies
 
 ```go
+// 핸들러는 package http에 속하므로 net/http는 alias로 import한다.
 import (
-    "co-browsing-session-server/internal/hub"
-    "co-browsing-session-server/internal/repository"
-    "co-browsing-session-server/internal/model"
     "encoding/json"
+    "log"
+    nethttp "net/http"
+
     "github.com/gin-gonic/gin"
     "github.com/gorilla/websocket"
-    "log"
-    "net/http"
+
+    "co-browsing-session-server/internal/domain/serialnumber"
+    "co-browsing-session-server/internal/domain/session"
+    "co-browsing-session-server/internal/services/hub"
 )
 ```
+
+WS 핸들러는 `interfaces/http` 레이어에 있으므로 도메인 타입(`session.Repository`, `serialnumber.SerialNumber`)과 서비스(`hub.Hub`)에만 의존한다. 인프라(memory 구현)는 모른다.
 
 ---
 
 ## Data Structures
 
-### WebSocket 메시지 모델 (model 패키지 업데이트)
+### WebSocket 메시지 DTO
 
-`internal/model/signaling.go`를 요구사항 프로토콜에 맞게 교체:
+WS 프로토콜 페이로드는 interface(adapter) 레이어의 DTO로 두고, 도메인 타입과 섞지 않는다. `interfaces/http` 패키지 내 별도 파일로 분리:
 
 ```go
-// internal/model/signaling.go (전면 교체)
+// internal/interfaces/http/signaling.go
 
-package model
+package http
 
 // 모든 WebSocket 메시지의 공통 래퍼
 type Message struct {
@@ -74,14 +79,8 @@ type ICECandidatePayload struct {
     Candidate string `json:"candidate"`
 }
 
-type ControlEventPayload struct {
-    Type      string  `json:"type"`            // "click" | "scroll" | "keydown"
-    X         *int    `json:"x,omitempty"`
-    Y         *int    `json:"y,omitempty"`
-    Key       *string `json:"key,omitempty"`
-    DeltaY    *int    `json:"deltaY,omitempty"`
-    Timestamp int64   `json:"timestamp"`
-}
+// control-event payload는 spec #6 (relay 서비스)에서 자체 정의한다.
+// WS 핸들러는 control-event를 raw json.RawMessage로 받아 relay에 위임만 한다.
 
 // --- 서버 → 클라이언트 페이로드 ---
 
@@ -95,7 +94,7 @@ type ErrorPayload struct {
 
 ```go
 var upgrader = websocket.Upgrader{
-    CheckOrigin: func(r *http.Request) bool {
+    CheckOrigin: func(r *nethttp.Request) bool {
         return true // CORS는 #8에서 Gin 미들웨어로 처리
     },
 }
@@ -125,9 +124,13 @@ Connection: Upgrade
 ### 핸들러 생성자
 
 ```go
-func NewWebSocketHandler(h *hub.Hub, s *repository.SessionStore) gin.HandlerFunc
+// internal/interfaces/http/websocket.go
+func NewWebSocketHandler(h *hub.Hub, repo session.Repository) *WebSocketHandler
 
-func RegisterWebSocketRoutes(router *gin.Engine, h *hub.Hub, s *repository.SessionStore)
+// 기존 SessionHandler와 동일하게 Handler 인터페이스 구현 — router.go 변경 없음
+func (h *WebSocketHandler) Register(r *gin.Engine) {
+    r.GET("/ws", h.handleUpgrade)
+}
 ```
 
 ---
@@ -140,11 +143,11 @@ func RegisterWebSocketRoutes(router *gin.Engine, h *hub.Hub, s *repository.Sessi
 1. query param 검증: serial, role 필수
    - 누락 시 400 반환
 
-2. store.Get(serial) 검증
-   - ErrSessionNotFound / ErrSessionExpired → 404 반환
-   - status == "ended" → 404 반환
+2. repo.Get(serialnumber.SerialNumber(serial)) 검증
+   - session.ErrNotFound / session.ErrExpired → 404 반환
+   - status == session.StatusEnded → 404 반환
 
-3. websocket.Upgrader.Upgrade(w, r) → *websocket.Conn 획득
+3. upgrader.Upgrade(c.Writer, c.Request) → *websocket.Conn 획득
    - 실패 시 500 (gorilla가 자동 처리)
 
 4. Client 생성:
@@ -155,14 +158,20 @@ func RegisterWebSocketRoutes(router *gin.Engine, h *hub.Hub, s *repository.Sessi
        Send:   make(chan []byte, 256),
    }
 
-5. hub.JoinRoom(serial, client) 호출
-   - peer != nil이면 → peer-joined 이벤트를 고객(customer)에게 전송
-   - peer 접속으로 인해 session status가 "waiting" → "active" 전환:
-     store.UpdateStatus(serial, StatusActive)
+5. peer := h.JoinRoom(serial, client) (h: 핸들러에 주입된 *hub.Hub 인스턴스)
+   peer가 nil이 아니면 (= 두 번째 접속자가 들어와 양쪽이 모인 경우):
+   - peer.Send에 peer-joined 이벤트 전송
+   - 세션 상태 전이 waiting → active:
+     if s, err := repo.Get(serialnumber.SerialNumber(serial)); err == nil {
+         if err := s.Transition(session.StatusActive); err == nil {  // 도메인 행동: 전이 + ExpiresAt 무기한
+             repo.Update(s)
+         }
+         // ErrInvalidTransition은 이미 active/ended이므로 무시한다.
+     }
 
 6. 두 goroutine 실행:
-   go writePump(client)   // Send 채널 → WebSocket 쓰기
-   go readPump(client, hub, store)  // WebSocket 읽기 → 메시지 디스패치
+   go writePump(client)               // Send 채널 → WebSocket 쓰기
+   go readPump(client, h, repo)       // WebSocket 읽기 → 메시지 디스패치
 ```
 
 ### readPump (WebSocket 읽기 루프)
@@ -172,7 +181,7 @@ for {
     _, message, err = conn.ReadMessage()
     if err (close / timeout) → break
 
-    var msg model.Message
+    var msg Message  // package http의 DTO
     json.Unmarshal(message, &msg)
 
     switch msg.Type {
@@ -186,12 +195,17 @@ for {
 }
 
 // 루프 종료 시 정리:
-hub.LeaveRoom(client)
+peer := h.LeaveRoom(client)
 conn.Close()
-if peer := hub.GetPeer(client); peer != nil {
+if peer != nil {
     peer.Send <- marshalMessage("peer-left", nil)
 }
-store.UpdateStatus(serial, StatusEnded)  // 이미 ended이면 무시
+// 세션 종료 전이 (이미 ended면 ErrInvalidTransition은 무시)
+if s, err := repo.Get(serialnumber.SerialNumber(serial)); err == nil {
+    if err := s.Transition(session.StatusEnded); err == nil {
+        repo.Update(s)
+    }
+}
 ```
 
 ### writePump (WebSocket 쓰기 루프)
@@ -209,8 +223,14 @@ for {
 ### 헬퍼 함수
 
 ```go
-// JSON 메시지 직렬화 헬퍼
+// internal/interfaces/http/websocket.go 내부 헬퍼
+
+// 임의 타입과 페이로드로 {"type":"...","payload":...} JSON 바이트를 생성
 func marshalMessage(msgType string, payload any) []byte
+
+// 발신 클라이언트에게 에러 메시지 전송 (Send 채널 push)
+// 내부적으로 marshalMessage("error", ErrorPayload{Code: code, Message: message})를 사용
+func sendError(client *hub.Client, code, message string)
 ```
 
 ---
@@ -219,9 +239,9 @@ func marshalMessage(msgType string, payload any) []byte
 
 | 작업 | 파일 |
 |------|------|
-| 신규 생성 | `internal/handler/websocket.go` |
-| 수정 (전면 교체) | `internal/model/signaling.go` |
-| 수정 | `main.go` (Hub, Store 주입) |
+| 신규 생성 | `internal/interfaces/http/websocket.go` (Handler 구현 + WS 루프) |
+| 신규 생성 | `internal/interfaces/http/signaling.go` (WS 메시지 DTO) |
+| 수정 | `internal/app/app.go` (Hub 생성 후 WS 핸들러에 Hub + Repository 주입, `NewRouter`에 추가) |
 
 ---
 

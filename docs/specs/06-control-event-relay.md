@@ -29,12 +29,14 @@
 
 ```go
 import (
-    "co-browsing-session-server/internal/hub"
-    "co-browsing-session-server/internal/model"
     "encoding/json"
     "time"
+
+    "co-browsing-session-server/internal/services/hub"
 )
 ```
+
+의존성 방향: services 레이어는 interfaces를 import하지 않는다. ControlEventPayload는 **relay 패키지에 자체 정의**한다 (spec #4의 `interfaces/http/signaling.go` DTO와는 동일한 JSON 형태지만 별개의 Go 타입 — 핸들러가 raw bytes로 위임하므로 변환 비용은 없음).
 
 신규 패키지 없음.
 
@@ -43,7 +45,7 @@ import (
 ## Data Structures
 
 ```go
-// model.ControlEventPayload (spec #4에서 정의됨)
+// internal/services/relay/control.go
 type ControlEventPayload struct {
     Type      string  `json:"type"`            // "click" | "scroll" | "keydown"
     X         *int    `json:"x,omitempty"`
@@ -69,7 +71,7 @@ var allowedControlEventTypes = map[string]bool{
 ## Interfaces / Contracts
 
 ```go
-// internal/relay/control.go
+// internal/services/relay/control.go
 
 package relay
 
@@ -90,22 +92,22 @@ func HandleControlEvent(client *hub.Client, peer *hub.Client, rawPayload json.Ra
 func HandleControlEvent(client, peer, rawPayload):
 
 1. 발신자 검증:
-   if client.Role != RoleAgent:
-       → client.Send <- error("FORBIDDEN", "only agent can send control events")
+   if client.Role != hub.RoleAgent:
+       → client.Send <- marshalError("FORBIDDEN", "only agent can send control events")
        → return
 
 2. 고객 연결 확인:
-   if peer == nil || peer.Role != RoleCustomer:
-       → client.Send <- error("PEER_NOT_CONNECTED", "customer is not connected")
+   if peer == nil || peer.Role != hub.RoleCustomer:
+       → client.Send <- marshalError("PEER_NOT_CONNECTED", "customer is not connected")
        → return
 
 3. payload 파싱:
-   var evt model.ControlEventPayload
+   var evt ControlEventPayload  // relay 패키지에서 정의 (위 Data Structures 참고)
    json.Unmarshal(rawPayload, &evt)
 
 4. 이벤트 타입 검증:
    if !allowedControlEventTypes[evt.Type]:
-       → client.Send <- error("INVALID_EVENT_TYPE", "unknown control event type: "+evt.Type)
+       → client.Send <- marshalError("INVALID_EVENT_TYPE", "unknown control event type: "+evt.Type)
        → return
 
 5. 타임스탬프 보완:
@@ -113,9 +115,11 @@ func HandleControlEvent(client, peer, rawPayload):
        evt.Timestamp = time.Now().UnixMilli()
 
 6. 고객에게 전달:
-   outMsg = marshalMessage("control-event", evt)
+   outMsg = marshalControlEvent(evt)  // relay 패키지의 helper — `{"type":"control-event","payload":{...}}` 형태로 직렬화
    peer.Send <- outMsg
 ```
+
+`marshalError` / `marshalControlEvent`는 relay 패키지 내부 헬퍼 — interfaces/http의 `marshalMessage`와는 별개로 정의한다 (의존 방향 보존).
 
 ### 이벤트 타입별 필수 필드
 
@@ -152,8 +156,8 @@ MVP에서는 필드 누락 검증을 하지 않는다 (클라이언트 책임). 
 
 | 작업 | 파일 |
 |------|------|
-| 신규 생성 | `internal/relay/control.go` |
-| 수정 | `internal/handler/websocket.go` (readPump의 `case "control-event":` 블록에 호출 추가) |
+| 신규 생성 | `internal/services/relay/control.go` |
+| 수정 | `internal/interfaces/http/websocket.go` (readPump의 `case "control-event":` 블록에 호출 추가) |
 
 ---
 

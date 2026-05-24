@@ -28,14 +28,16 @@ WebRTC P2P 연결 실패 시 폴백으로 사용하는 TURN 서버의 임시 자
 ## Dependencies
 
 ```go
+// 핸들러는 package http에 속하므로 net/http는 alias로 import한다.
 import (
     "crypto/hmac"
     "crypto/sha1"
     "encoding/base64"
     "fmt"
-    "net/http"
+    nethttp "net/http"
     "os"
     "time"
+
     "github.com/gin-gonic/gin"
 )
 ```
@@ -81,8 +83,13 @@ Response 200 OK:
 ### 핸들러 생성자
 
 ```go
-func NewTURNCredentialsHandler() gin.HandlerFunc
-func RegisterTURNCredentialsRoutes(router *gin.Engine)
+// internal/interfaces/http/turn.go
+func NewTURNHandler() *TURNHandler
+
+// Handler 인터페이스 구현 — router.go 변경 없음
+func (h *TURNHandler) Register(r *gin.Engine) {
+    r.GET("/turn-credentials", h.getCredentials)
+}
 ```
 
 ---
@@ -132,8 +139,8 @@ func RegisterTURNCredentialsRoutes(router *gin.Engine)
 
 | 작업 | 파일 |
 |------|------|
-| 신규 생성 | `internal/handler/turn_credentials.go` |
-| 수정 | `main.go` (라우트 등록 추가) |
+| 신규 생성 | `internal/interfaces/http/turn.go` (Handler 구현) |
+| 수정 | `internal/app/app.go` (핸들러 생성 후 `NewRouter`에 전달) |
 
 ---
 
