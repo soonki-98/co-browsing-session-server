@@ -76,3 +76,18 @@ func (s *SessionStore) UpdateStatus(serial string, status model.SessionStatus) (
 	value.Status = status
 	return value, nil
 }
+
+func (s *SessionStore) Delete(serial string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	_, exist := s.sessions[serial]
+
+	if !exist {
+		return ErrSessionNotFound
+	}
+
+	delete(s.sessions, serial)
+
+	return nil
+}
