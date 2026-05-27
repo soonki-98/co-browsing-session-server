@@ -6,7 +6,7 @@ import (
 	"co-browsing-session-server/internal/domain/serialnumber"
 	"co-browsing-session-server/internal/infrastructure/memory"
 	httpiface "co-browsing-session-server/internal/interfaces/http"
-	sessionsvc "co-browsing-session-server/internal/services/session"
+	rssvc "co-browsing-session-server/internal/services/roomsession"
 )
 
 type App struct {
@@ -20,14 +20,15 @@ func New() *App {
 	serialGen := serialnumber.NewRandomGenerator()
 
 	// infrastructure
-	sessionRepo := memory.NewSessionRepository()
+	rsRepo := memory.NewRoomSessionRepository()
+	invRepo := memory.NewInvitationRepository()
 
 	// application (use cases)
-	sessionService := sessionsvc.NewService(sessionRepo, serialGen)
+	rsService := rssvc.NewService(rsRepo, invRepo, serialGen)
 
 	// interfaces (HTTP)
 	router := httpiface.NewRouter(
-		httpiface.NewSessionHandler(sessionService),
+		httpiface.NewRoomHandler(rsService),
 		httpiface.NewPingHandler(),
 	)
 

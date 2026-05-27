@@ -1,4 +1,4 @@
-package session
+package roomsession
 
 type Status string
 
