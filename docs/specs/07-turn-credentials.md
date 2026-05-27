@@ -3,15 +3,15 @@
 ## Overview
 
 WebRTC P2P 연결 실패 시 폴백으로 사용하는 TURN 서버의 임시 자격증명을 발급한다.  
-전체 8단계 구현 중 **7번째** — 다른 컴포넌트와 독립적. Session Store나 WebSocket Hub에 의존하지 않는다.
+전체 8단계 구현 중 **7번째** — 다른 컴포넌트와 독립적. Domain Stores나 WebSocket Hub에 의존하지 않는다.
 
 ---
 
 ## Implementation Order
 
 ```
-[1] Session Store ✓
-[2] Serial Number Update ✓
+[1] Domain Stores ✓
+[2] Room Handler (POST /rooms) ✓
 [3] WebSocket Hub ✓
 [4] WebSocket Handler ✓
 [5] Signaling Protocol ✓

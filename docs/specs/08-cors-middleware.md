@@ -10,8 +10,8 @@
 ## Implementation Order
 
 ```
-[1] Session Store ✓
-[2] Serial Number Update ✓
+[1] Domain Stores ✓
+[2] Room Handler (POST /rooms) ✓
 [3] WebSocket Hub ✓
 [4] WebSocket Handler ✓
 [5] Signaling Protocol ✓
