@@ -14,19 +14,19 @@ type Generator interface {
 const charset = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789"
 
 type randomGenerator struct {
-	rng *rand.Rand
+	random *rand.Rand
 }
 
 func NewRandomGenerator() Generator {
 	return &randomGenerator{
-		rng: rand.New(rand.NewSource(time.Now().UnixNano())),
+		random: rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 }
 
-func (g *randomGenerator) Generate(length int) SerialNumber {
-	b := make([]byte, length)
-	for i := range b {
-		b[i] = charset[g.rng.Intn(len(charset))]
+func (generator *randomGenerator) Generate(length int) SerialNumber {
+	buffer := make([]byte, length)
+	for index := range buffer {
+		buffer[index] = charset[generator.random.Intn(len(charset))]
 	}
-	return SerialNumber(b)
+	return SerialNumber(buffer)
 }

@@ -18,8 +18,8 @@ var (
 
 type RoomID string
 
-func (r RoomID) String() string {
-	return string(r)
+func (roomID RoomID) String() string {
+	return string(roomID)
 }
 
 func NewID() RoomID {
@@ -33,29 +33,29 @@ type RoomSession struct {
 	ExpiresAt time.Time
 }
 
-func New(id RoomID) *RoomSession {
+func New(roomID RoomID) *RoomSession {
 	now := time.Now()
 	return &RoomSession{
-		ID:        id,
+		ID:        roomID,
 		Status:    StatusWaiting,
 		StartedAt: now,
 		ExpiresAt: now.Add(SessionTTL),
 	}
 }
 
-func (s *RoomSession) IsExpired(now time.Time) bool {
-	return !s.ExpiresAt.IsZero() && now.After(s.ExpiresAt)
+func (roomSession *RoomSession) IsExpired(now time.Time) bool {
+	return !roomSession.ExpiresAt.IsZero() && now.After(roomSession.ExpiresAt)
 }
 
 // Transition은 상태 전이 규칙을 검증한 뒤 적용한다.
 // active로 진입하면 ExpiresAt을 zero로 만들어 무기한 유지한다.
-func (s *RoomSession) Transition(to Status) error {
-	if !s.Status.CanTransitionTo(to) {
+func (roomSession *RoomSession) Transition(targetStatus Status) error {
+	if !roomSession.Status.CanTransitionTo(targetStatus) {
 		return ErrInvalidTransition
 	}
-	if to == StatusActive {
-		s.ExpiresAt = time.Time{}
+	if targetStatus == StatusActive {
+		roomSession.ExpiresAt = time.Time{}
 	}
-	s.Status = to
+	roomSession.Status = targetStatus
 	return nil
 }

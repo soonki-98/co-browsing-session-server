@@ -8,23 +8,23 @@ const (
 	StatusEnded   Status = "ended"
 )
 
-func (s Status) IsValid() bool {
-	switch s {
+func (status Status) IsValid() bool {
+	switch status {
 	case StatusWaiting, StatusActive, StatusEnded:
 		return true
 	}
 	return false
 }
 
-func (s Status) CanTransitionTo(to Status) bool {
-	if !to.IsValid() {
+func (status Status) CanTransitionTo(targetStatus Status) bool {
+	if !targetStatus.IsValid() {
 		return false
 	}
-	switch s {
+	switch status {
 	case StatusWaiting:
-		return to == StatusActive || to == StatusEnded
+		return targetStatus == StatusActive || targetStatus == StatusEnded
 	case StatusActive:
-		return to == StatusEnded
+		return targetStatus == StatusEnded
 	}
 	return false
 }

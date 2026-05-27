@@ -17,24 +17,24 @@ type App struct {
 // 의존성 변경(예: in-memory → Redis)은 이 함수만 수정하면 된다.
 func New() *App {
 	// domain
-	serialGen := serialnumber.NewRandomGenerator()
+	serialNumberGenerator := serialnumber.NewRandomGenerator()
 
 	// infrastructure
-	rsRepo := memory.NewRoomSessionRepository()
-	invRepo := memory.NewInvitationRepository()
+	roomSessionRepository := memory.NewRoomSessionRepository()
+	invitationRepository := memory.NewInvitationRepository()
 
 	// application (use cases)
-	rsService := rssvc.NewService(rsRepo, invRepo, serialGen)
+	roomSessionService := rssvc.NewService(roomSessionRepository, invitationRepository, serialNumberGenerator)
 
 	// interfaces (HTTP)
 	router := httpiface.NewRouter(
-		httpiface.NewRoomHandler(rsService),
+		httpiface.NewRoomHandler(roomSessionService),
 		httpiface.NewPingHandler(),
 	)
 
 	return &App{router: router}
 }
 
-func (a *App) Run(addr string) error {
-	return a.router.Run(addr)
+func (app *App) Run(addr string) error {
+	return app.router.Run(addr)
 }

@@ -33,6 +33,6 @@ func New(serial serialnumber.SerialNumber, roomID roomsession.RoomID) *Invitatio
 	}
 }
 
-func (i *Invitation) IsExpired(now time.Time) bool {
-	return now.After(i.ExpiresAt)
+func (invitation *Invitation) IsExpired(now time.Time) bool {
+	return now.After(invitation.ExpiresAt)
 }

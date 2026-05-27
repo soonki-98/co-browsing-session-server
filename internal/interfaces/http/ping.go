@@ -12,10 +12,10 @@ func NewPingHandler() *PingHandler {
 	return &PingHandler{}
 }
 
-func (h *PingHandler) Register(r *gin.Engine) {
-	r.GET("/ping", h.ping)
+func (pingHandler *PingHandler) Register(engine *gin.Engine) {
+	engine.GET("/ping", pingHandler.ping)
 }
 
-func (h *PingHandler) ping(c *gin.Context) {
-	c.JSON(nethttp.StatusOK, gin.H{"message": "pong"})
+func (pingHandler *PingHandler) ping(ginContext *gin.Context) {
+	ginContext.JSON(nethttp.StatusOK, gin.H{"message": "pong"})
 }

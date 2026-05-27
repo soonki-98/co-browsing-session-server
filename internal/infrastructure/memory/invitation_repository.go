@@ -9,7 +9,7 @@ import (
 )
 
 type InvitationRepository struct {
-	mu          sync.Mutex
+	mutex       sync.Mutex
 	invitations map[serialnumber.SerialNumber]*invitation.Invitation
 }
 
@@ -19,39 +19,39 @@ func NewInvitationRepository() *InvitationRepository {
 	}
 }
 
-func (r *InvitationRepository) Create(i *invitation.Invitation) (*invitation.Invitation, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+func (invitationRepository *InvitationRepository) Create(newInvitation *invitation.Invitation) (*invitation.Invitation, error) {
+	invitationRepository.mutex.Lock()
+	defer invitationRepository.mutex.Unlock()
 
-	if _, exist := r.invitations[i.Serial]; exist {
+	if _, exists := invitationRepository.invitations[newInvitation.Serial]; exists {
 		return nil, invitation.ErrAlreadyExists
 	}
-	r.invitations[i.Serial] = i
-	return i, nil
+	invitationRepository.invitations[newInvitation.Serial] = newInvitation
+	return newInvitation, nil
 }
 
-func (r *InvitationRepository) ResolveBySerial(s serialnumber.SerialNumber) (*invitation.Invitation, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+func (invitationRepository *InvitationRepository) ResolveBySerial(serial serialnumber.SerialNumber) (*invitation.Invitation, error) {
+	invitationRepository.mutex.Lock()
+	defer invitationRepository.mutex.Unlock()
 
-	inv, exist := r.invitations[s]
-	if !exist {
+	storedInvitation, exists := invitationRepository.invitations[serial]
+	if !exists {
 		return nil, invitation.ErrNotFound
 	}
-	if inv.IsExpired(time.Now()) {
-		delete(r.invitations, s)
+	if storedInvitation.IsExpired(time.Now()) {
+		delete(invitationRepository.invitations, serial)
 		return nil, invitation.ErrExpired
 	}
-	return inv, nil
+	return storedInvitation, nil
 }
 
-func (r *InvitationRepository) Delete(s serialnumber.SerialNumber) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+func (invitationRepository *InvitationRepository) Delete(serial serialnumber.SerialNumber) error {
+	invitationRepository.mutex.Lock()
+	defer invitationRepository.mutex.Unlock()
 
-	if _, exist := r.invitations[s]; !exist {
+	if _, exists := invitationRepository.invitations[serial]; !exists {
 		return invitation.ErrNotFound
 	}
-	delete(r.invitations, s)
+	delete(invitationRepository.invitations, serial)
 	return nil
 }

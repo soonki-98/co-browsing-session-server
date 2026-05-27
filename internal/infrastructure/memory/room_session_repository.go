@@ -8,7 +8,7 @@ import (
 )
 
 type RoomSessionRepository struct {
-	mu       sync.Mutex
+	mutex    sync.Mutex
 	sessions map[roomsession.RoomID]*roomsession.RoomSession
 }
 
@@ -18,50 +18,50 @@ func NewRoomSessionRepository() *RoomSessionRepository {
 	}
 }
 
-func (r *RoomSessionRepository) Create(s *roomsession.RoomSession) (*roomsession.RoomSession, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+func (roomSessionRepository *RoomSessionRepository) Create(roomSession *roomsession.RoomSession) (*roomsession.RoomSession, error) {
+	roomSessionRepository.mutex.Lock()
+	defer roomSessionRepository.mutex.Unlock()
 
-	if _, exist := r.sessions[s.ID]; exist {
+	if _, exists := roomSessionRepository.sessions[roomSession.ID]; exists {
 		return nil, roomsession.ErrAlreadyExists
 	}
-	r.sessions[s.ID] = s
-	return s, nil
+	roomSessionRepository.sessions[roomSession.ID] = roomSession
+	return roomSession, nil
 }
 
-func (r *RoomSessionRepository) Get(id roomsession.RoomID) (*roomsession.RoomSession, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+func (roomSessionRepository *RoomSessionRepository) Get(roomID roomsession.RoomID) (*roomsession.RoomSession, error) {
+	roomSessionRepository.mutex.Lock()
+	defer roomSessionRepository.mutex.Unlock()
 
-	s, exist := r.sessions[id]
-	if !exist {
+	storedSession, exists := roomSessionRepository.sessions[roomID]
+	if !exists {
 		return nil, roomsession.ErrNotFound
 	}
-	if s.IsExpired(time.Now()) {
-		delete(r.sessions, id)
+	if storedSession.IsExpired(time.Now()) {
+		delete(roomSessionRepository.sessions, roomID)
 		return nil, roomsession.ErrExpired
 	}
-	return s, nil
+	return storedSession, nil
 }
 
-func (r *RoomSessionRepository) Update(s *roomsession.RoomSession) (*roomsession.RoomSession, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+func (roomSessionRepository *RoomSessionRepository) Update(roomSession *roomsession.RoomSession) (*roomsession.RoomSession, error) {
+	roomSessionRepository.mutex.Lock()
+	defer roomSessionRepository.mutex.Unlock()
 
-	if _, exist := r.sessions[s.ID]; !exist {
+	if _, exists := roomSessionRepository.sessions[roomSession.ID]; !exists {
 		return nil, roomsession.ErrNotFound
 	}
-	r.sessions[s.ID] = s
-	return s, nil
+	roomSessionRepository.sessions[roomSession.ID] = roomSession
+	return roomSession, nil
 }
 
-func (r *RoomSessionRepository) Delete(id roomsession.RoomID) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+func (roomSessionRepository *RoomSessionRepository) Delete(roomID roomsession.RoomID) error {
+	roomSessionRepository.mutex.Lock()
+	defer roomSessionRepository.mutex.Unlock()
 
-	if _, exist := r.sessions[id]; !exist {
+	if _, exists := roomSessionRepository.sessions[roomID]; !exists {
 		return roomsession.ErrNotFound
 	}
-	delete(r.sessions, id)
+	delete(roomSessionRepository.sessions, roomID)
 	return nil
 }

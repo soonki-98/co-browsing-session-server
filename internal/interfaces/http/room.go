@@ -16,18 +16,18 @@ func NewRoomHandler(service *rssvc.Service) *RoomHandler {
 	return &RoomHandler{service: service}
 }
 
-func (h *RoomHandler) Register(r *gin.Engine) {
-	r.POST("/rooms", h.postRoom)
+func (roomHandler *RoomHandler) Register(engine *gin.Engine) {
+	engine.POST("/rooms", roomHandler.postRoom)
 }
 
-func (h *RoomHandler) postRoom(c *gin.Context) {
-	_, inv, err := h.service.Create(c.Request.Context())
+func (roomHandler *RoomHandler) postRoom(ginContext *gin.Context) {
+	_, createdInvitation, err := roomHandler.service.Create(ginContext.Request.Context())
 	if err != nil {
-		c.JSON(nethttp.StatusInternalServerError, ErrorResponse{Error: err.Error()})
+		ginContext.JSON(nethttp.StatusInternalServerError, ErrorResponse{Error: err.Error()})
 		return
 	}
-	c.JSON(nethttp.StatusOK, PostRoomResponse{
-		SerialNumber: inv.Serial.String(),
-		ExpiresAt:    inv.ExpiresAt,
+	ginContext.JSON(nethttp.StatusOK, PostRoomResponse{
+		SerialNumber: createdInvitation.Serial.String(),
+		ExpiresAt:    createdInvitation.ExpiresAt,
 	})
 }
