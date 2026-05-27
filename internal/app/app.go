@@ -6,6 +6,8 @@ import (
 	"co-browsing-session-server/internal/domain/serialnumber"
 	"co-browsing-session-server/internal/infrastructure/memory"
 	httpiface "co-browsing-session-server/internal/interfaces/http"
+	"co-browsing-session-server/internal/interfaces/http/ping"
+	"co-browsing-session-server/internal/interfaces/http/room"
 	rssvc "co-browsing-session-server/internal/services/roomsession"
 )
 
@@ -28,8 +30,8 @@ func New() *App {
 
 	// interfaces (HTTP)
 	router := httpiface.NewRouter(
-		httpiface.NewRoomHandler(roomSessionService),
-		httpiface.NewPingHandler(),
+		room.NewHandler(roomSessionService),
+		ping.NewHandler(),
 	)
 
 	return &App{router: router}

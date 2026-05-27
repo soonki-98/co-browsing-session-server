@@ -1,5 +1,19 @@
 components:
   schemas:
+    CreateData:
+      additionalProperties: false
+      properties:
+        expires_at:
+          description: 초대 코드 만료 시각
+          format: date-time
+          type: string
+        serial_number:
+          description: 방 초대 시리얼 코드
+          type: string
+      required:
+        - serial_number
+        - expires_at
+      type: object
     ErrorDetail:
       additionalProperties: false
       properties:
@@ -59,16 +73,9 @@ components:
           format: uri
           type: string
       type: object
-    PingOutputBody:
+    PingData:
       additionalProperties: false
       properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/PingOutputBody.json
-          format: uri
-          readOnly: true
-          type: string
         message:
           description: 항상 pong
           examples:
@@ -77,26 +84,35 @@ components:
       required:
         - message
       type: object
-    PostRoomOutputBody:
+    SuccessResponseCreateDataBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/PostRoomOutputBody.json
+            - https://example.com/schemas/SuccessResponseCreateDataBody.json
           format: uri
           readOnly: true
           type: string
-        expires_at:
-          description: 초대 코드 만료 시각
-          format: date-time
-          type: string
-        serial_number:
-          description: 방 초대 시리얼 코드
-          type: string
+        data:
+          $ref: "#/components/schemas/CreateData"
       required:
-        - serial_number
-        - expires_at
+        - data
+      type: object
+    SuccessResponsePingDataBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - https://example.com/schemas/SuccessResponsePingDataBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/PingData"
+      required:
+        - data
       type: object
 info:
   title: Co-Browsing Session Server
@@ -112,7 +128,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PingOutputBody"
+                $ref: "#/components/schemas/SuccessResponsePingDataBody"
           description: OK
         default:
           content:
@@ -132,7 +148,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PostRoomOutputBody"
+                $ref: "#/components/schemas/SuccessResponseCreateDataBody"
           description: OK
         default:
           content:
