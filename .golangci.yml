@@ -1,0 +1,61 @@
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - depguard
+  settings:
+    depguard:
+      rules:
+        # internal/domain: 어떤 외부 레이어도 import 금지 (가장 안쪽)
+        domain:
+          list-mode: lax
+          files:
+            - "**/internal/domain/**/*.go"
+          deny:
+            - pkg: co-browsing-session-server/internal/services
+              desc: "domain은 services에 의존할 수 없다"
+            - pkg: co-browsing-session-server/internal/interfaces
+              desc: "domain은 interfaces에 의존할 수 없다"
+            - pkg: co-browsing-session-server/internal/infrastructure
+              desc: "domain은 infrastructure에 의존할 수 없다"
+            - pkg: co-browsing-session-server/internal/app
+              desc: "domain은 app에 의존할 수 없다"
+
+        # internal/services: domain만 의존 허용
+        services:
+          list-mode: lax
+          files:
+            - "**/internal/services/**/*.go"
+          deny:
+            - pkg: co-browsing-session-server/internal/interfaces
+              desc: "services는 interfaces에 의존할 수 없다"
+            - pkg: co-browsing-session-server/internal/infrastructure
+              desc: "services는 infrastructure 구현에 의존할 수 없다 (포트만 사용)"
+            - pkg: co-browsing-session-server/internal/app
+              desc: "services는 app에 의존할 수 없다"
+
+        # internal/interfaces: services + domain만 의존 허용
+        interfaces:
+          list-mode: lax
+          files:
+            - "**/internal/interfaces/**/*.go"
+          deny:
+            - pkg: co-browsing-session-server/internal/infrastructure
+              desc: "interfaces는 infrastructure 구현에 직접 의존할 수 없다 (services 경유)"
+            - pkg: co-browsing-session-server/internal/app
+              desc: "interfaces는 app에 의존할 수 없다"
+
+        # internal/infrastructure: domain만 의존 허용 (포트 구현)
+        infrastructure:
+          list-mode: lax
+          files:
+            - "**/internal/infrastructure/**/*.go"
+          deny:
+            - pkg: co-browsing-session-server/internal/services
+              desc: "infrastructure는 services에 의존할 수 없다"
+            - pkg: co-browsing-session-server/internal/interfaces
+              desc: "infrastructure는 interfaces에 의존할 수 없다"
+            - pkg: co-browsing-session-server/internal/app
+              desc: "infrastructure는 app에 의존할 수 없다"
+        # 주: internal/app(컴포지션 루트)는 모든 레이어를 import 가능하므로 규칙 없음
