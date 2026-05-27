@@ -1,9 +1,10 @@
 package http
 
 import (
-	nethttp "net/http"
+	"context"
+	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/danielgtaylor/huma/v2"
 
 	rssvc "co-browsing-session-server/internal/services/roomsession"
 )
@@ -16,18 +17,24 @@ func NewRoomHandler(service *rssvc.Service) *RoomHandler {
 	return &RoomHandler{service: service}
 }
 
-func (roomHandler *RoomHandler) Register(engine *gin.Engine) {
-	engine.POST("/rooms", roomHandler.postRoom)
+func (roomHandler *RoomHandler) Register(api huma.API) {
+	huma.Register(api, huma.Operation{
+		OperationID: "createRoom",
+		Method:      http.MethodPost,
+		Path:        "/rooms",
+		Summary:     "새 방 생성",
+		Description: "새 RoomSession과 초대 코드를 발급합니다.",
+		Tags:        []string{"rooms"},
+	}, roomHandler.PostRoom)
 }
 
-func (roomHandler *RoomHandler) postRoom(ginContext *gin.Context) {
-	_, createdInvitation, err := roomHandler.service.Create(ginContext.Request.Context())
+func (roomHandler *RoomHandler) PostRoom(ctx context.Context, _ *EmptyInput) (*PostRoomOutput, error) {
+	_, createdInvitation, err := roomHandler.service.Create(ctx)
 	if err != nil {
-		ginContext.JSON(nethttp.StatusInternalServerError, ErrorResponse{Error: err.Error()})
-		return
+		return nil, huma.Error500InternalServerError("failed to create room", err)
 	}
-	ginContext.JSON(nethttp.StatusOK, PostRoomResponse{
-		SerialNumber: createdInvitation.Serial.String(),
-		ExpiresAt:    createdInvitation.ExpiresAt,
-	})
+	output := &PostRoomOutput{}
+	output.Body.SerialNumber = createdInvitation.Serial.String()
+	output.Body.ExpiresAt = createdInvitation.ExpiresAt
+	return output, nil
 }

@@ -38,3 +38,9 @@ func New() *App {
 func (app *App) Run(addr string) error {
 	return app.router.Run(addr)
 }
+
+// Engine은 구성된 gin 엔진을 그대로 노출한다. 서버를 띄우지 않고 in-process 요청을 보내고 싶을 때
+// (예: cmd/gen-openapi가 /openapi.yaml을 추출할 때) 사용한다.
+func (app *App) Engine() *gin.Engine {
+	return app.router
+}
