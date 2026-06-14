@@ -18,6 +18,7 @@ type Handler interface {
 func NewRouter(handlers ...Handler) *gin.Engine {
 	engine := gin.New()
 	engine.Use(middleware.Default()...)
+	engine.Use(middleware.CORSMiddleware(middleware.LoadAllowedOrigins()))
 
 	api := humagin.New(engine, huma.DefaultConfig("Co-Browsing Session Server", "1.0.0"))
 	for _, handler := range handlers {

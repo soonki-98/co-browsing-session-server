@@ -25,6 +25,7 @@ description: Use when improving existing Go code in the co-browsing session serv
 - **에러 처리 정리**: 맥락 없는 에러를 `fmt.Errorf("...: %w", err)`로 래핑, 분기 에러를 sentinel + `errors.Is`로.
 - **로깅 정리**: 산발적 로그를 경계 단일 지점으로, `log/slog` 구조적 로깅 지향. 안쪽 레이어의 이중 로깅 제거.
 - **중복 제거 / 함수 추출 / 거대 파일 분할**: 한 파일·타입이 한 책임만 갖도록.
+- **주석 = 리팩터링 신호**: 프로덕션 코드의 설명형 주석은 "코드만으로 의도가 안 읽힌다"는 신호로 본다. 주석만 지우지 말고 **더 나은 이름·함수 추출·구조 변경으로 주석 없이 읽히게** 코드를 고친다. 예외: 테스트 코드, DTO 등 스펙·외부 계약 문서(godoc·OpenAPI 설명). 상세는 루트 `CLAUDE.md` 「주석」.
 
 ## 범위 규율
 

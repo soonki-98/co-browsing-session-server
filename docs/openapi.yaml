@@ -14,6 +14,36 @@ components:
         - serial_number
         - expires_at
       type: object
+    Credentials:
+      additionalProperties: false
+      properties:
+        password:
+          description: base64(HMAC-SHA1(secret, username))로 계산된 임시 비밀번호
+          type: string
+        ttl:
+          description: 자격증명 유효 기간(초). 발급 시점 기준
+          examples:
+            - 3600
+          format: int64
+          type: integer
+        uris:
+          description: 접속 대상 TURN 서버 주소 목록(하나 이상)
+          items:
+            type: string
+          type:
+            - array
+            - "null"
+        username:
+          description: TURN 접속 사용자명. {만료_unix_timestamp}:cobrowsing 형식
+          examples:
+            - 1716003600:cobrowsing
+          type: string
+      required:
+        - username
+        - password
+        - ttl
+        - uris
+      type: object
     ErrorDetail:
       additionalProperties: false
       properties:
@@ -99,6 +129,21 @@ components:
       required:
         - data
       type: object
+    SuccessResponseCredentialsBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - https://example.com/schemas/SuccessResponseCredentialsBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/Credentials"
+      required:
+        - data
+      type: object
     SuccessResponsePingDataBody:
       additionalProperties: false
       properties:
@@ -159,3 +204,23 @@ paths:
       summary: 새 방 생성
       tags:
         - rooms
+  /turn-credentials:
+    get:
+      description: WebRTC 폴백용 TURN 중계 서버 단기 접속 자격증명을 발급합니다.
+      operationId: getTURNCredentials
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponseCredentialsBody"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Error
+      summary: TURN 자격증명 발급
+      tags:
+        - turn

@@ -17,7 +17,7 @@ description: Use when implementing an approved technical design (docs/designs/<�
 2. **의존 순서로 분해**: `domain → infrastructure → services → interfaces → app`. 안쪽이 먼저 GREEN이어야 바깥이 주입받을 수 있다.
 3. **유닛마다 TDD 사이클**:
    - **RED**: 실패 테스트가 있어야 한다. 없으면 `test-authoring`(또는 `test-writer` agent)으로 먼저 확보한다. **실패 테스트 없이 구현을 시작하지 않는다.**
-   - **GREEN**: 그 테스트를 통과시키는 **최소** 구현. 스펙에 없는 기능을 추가하지 않는다(YAGNI).
+   - **GREEN**: 그 테스트를 통과시키는 **최소** 구현. 스펙에 없는 기능을 추가하지 않는다(YAGNI). 구현 본문에는 설명형 주석을 달지 않는다 — 의도는 이름·구조로 드러내고, 주석이 필요하면 그건 리팩터링 신호다(루트 `CLAUDE.md` 「주석」). 예외: 테스트 코드, DTO 등 스펙·계약 문서.
    - **REFACTOR**: 테스트 green을 유지하며 정리. 필요 시 `code-refactoring`.
 4. 일반 TDD 규율은 superpowers `test-driven-development`를 따른다.
 
