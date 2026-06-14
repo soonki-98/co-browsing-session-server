@@ -1,4 +1,4 @@
-package http
+package ws
 
 import "encoding/json"
 
@@ -28,3 +28,18 @@ const (
 	msgTypePeerLeft     = "peer-left"
 	msgTypeError        = "error"
 )
+
+// marshalMessage는 타입과 페이로드를 {"type":...,"payload":...} JSON 바이트로 직렬화한다.
+// payload가 nil이면 payload 필드는 생략된다.
+func marshalMessage(messageType string, payload any) []byte {
+	message := Message{Type: messageType}
+	if payload != nil {
+		encodedPayload, err := json.Marshal(payload)
+		if err != nil {
+			encodedPayload = []byte("null")
+		}
+		message.Payload = encodedPayload
+	}
+	encoded, _ := json.Marshal(message)
+	return encoded
+}
