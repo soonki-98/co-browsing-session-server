@@ -1,6 +1,10 @@
 package ws
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"co-browsing-session-server/internal/services/signaling"
+)
 
 // Message는 모든 WebSocket 메시지의 공통 래퍼다.
 // 프로토콜 페이로드는 adapter(interfaces) 레이어의 DTO로만 다루고 도메인 타입과 섞지 않는다.
@@ -16,12 +20,13 @@ type ErrorPayload struct {
 }
 
 // WebSocket 메시지 타입 상수.
-// 시그널링(offer/answer/ice-candidate)과 control-event는 Step 5/6에서 전용 로직으로 다뤄지며,
-// 현재는 핸들러가 raw 바이트를 상대방에게 그대로 전달(passthrough)한다.
+// 시그널링(offer/answer/ice-candidate)은 services/signaling이 단일 진실 출처로 export하는
+// 상수를 재사용해 매직 스트링 중복을 막는다. 트랜스포트 전용 타입(leave/peer-*/error)과
+// control-event는 여기서 선언한다.
 const (
-	msgTypeOffer        = "offer"
-	msgTypeAnswer       = "answer"
-	msgTypeICECandidate = "ice-candidate"
+	msgTypeOffer        = signaling.MsgTypeOffer
+	msgTypeAnswer       = signaling.MsgTypeAnswer
+	msgTypeICECandidate = signaling.MsgTypeICECandidate
 	msgTypeControlEvent = "control-event"
 	msgTypeLeave        = "leave"
 	msgTypePeerJoined   = "peer-joined"

@@ -11,6 +11,8 @@ import (
 
 	"co-browsing-session-server/internal/services/connection"
 	"co-browsing-session-server/internal/services/hub"
+	"co-browsing-session-server/internal/services/relay"
+	"co-browsing-session-server/internal/services/signaling"
 )
 
 // upgrader는 HTTP 연결을 WebSocket으로 승격한다.
@@ -106,12 +108,21 @@ func (handler *Handler) readPump(client *hub.Client, done chan struct{}) {
 		}
 
 		switch incoming.Type {
-		case msgTypeOffer, msgTypeAnswer, msgTypeICECandidate, msgTypeControlEvent:
-			// TODO(step5/6): role 검증 + services/signaling·relay로 교체.
-			// 현재는 시그널링/제어 메시지를 상대방에게 raw 바이트 그대로 전달한다.
-			if peer := handler.coordinator.Peer(client); peer != nil {
-				trySend(peer, rawMessage)
+		case msgTypeOffer, msgTypeAnswer, msgTypeICECandidate:
+			// 시그널링 중계: 역할 검증·peer 미접속 안내·원문 송신은 모두 서비스가 수행한다.
+			// peer는 nil일 수 있고(상대 미접속), 서비스가 PEER_NOT_CONNECTED로 처리한다.
+			peer := handler.coordinator.Peer(client)
+			_ = signaling.HandleSignalingMessage(client, peer, incoming.Type, rawMessage)
+		case msgTypeControlEvent:
+			// 제어 이벤트 중계: 검증·타임스탬프 보완·직렬화는 서비스가 결정하고,
+			// 채널 송신(거부 회신 / 고객 전달)만 트랜스포트가 수행한다.
+			peer := handler.coordinator.Peer(client)
+			result := relay.HandleControlEvent(client.Role, peer, incoming.Payload)
+			if result.Rejected {
+				sendError(client, string(result.Code), result.Message)
+				continue
 			}
+			trySend(peer, result.Outbound)
 		case msgTypeLeave:
 			return
 		default:

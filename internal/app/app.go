@@ -8,6 +8,7 @@ import (
 	httpiface "co-browsing-session-server/internal/interfaces/http"
 	"co-browsing-session-server/internal/interfaces/http/ping"
 	"co-browsing-session-server/internal/interfaces/http/room"
+	"co-browsing-session-server/internal/interfaces/http/turn"
 	"co-browsing-session-server/internal/interfaces/ws"
 	"co-browsing-session-server/internal/services/connection"
 	"co-browsing-session-server/internal/services/hub"
@@ -37,6 +38,7 @@ func New() *App {
 	router := httpiface.NewRouter(
 		room.NewHandler(roomSessionService),
 		ping.NewHandler(),
+		turn.NewHandler(),
 	)
 
 	// WebSocket(GET /ws)은 raw 업그레이드라 huma를 통과할 수 없어 gin 엔진에 직접 등록한다.
