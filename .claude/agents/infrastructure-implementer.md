@@ -19,7 +19,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 - 구현은 도메인 포트 인터페이스 시그니처를 그대로 만족시키고, 도메인 타입을 입출력으로 쓴다.
 - **도메인 에러 규약 준수**: 없으면 `ErrNotFound`, 만료면 `ErrExpired` 등 도메인 sentinel을 반환해 호출자가 `errors.Is`로 분기 가능하게.
 - 공유 가변 상태(in-memory map 등)는 **mutex로 보호**(read-on-check가 write를 동반하면 `sync.Mutex`). `go test -race`로 검증.
-- 비즈니스 규칙을 두지 않는다. 네이밍 풀네임. 규칙 충돌 시 `CLAUDE.md` 우선.
+- 비즈니스 규칙을 두지 않는다. 네이밍·Go 품질은 `golang-*` 스킬(관용 네이밍 등)을 따르고, 프로젝트 고유 규칙은 `CLAUDE.md`.
 
 ## 마무리
 

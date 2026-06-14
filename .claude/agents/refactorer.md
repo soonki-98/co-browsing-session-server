@@ -20,7 +20,9 @@ tools: Read, Edit, Write, Grep, Glob, Bash
 
 ## 자주 하는 것
 
-레이어 위반 교정(로직을 올바른 레이어로), 풀네임 리네임, 포트 추출(의존 역전), 에러 래핑/sentinel 정리, `log/slog` 구조적 로깅·경계 단일 로깅, 중복 제거·거대 파일 분할.
+레이어 위반 교정(로직을 올바른 레이어로), 관용 네이밍 정렬(`golang-naming`: 짧은 receiver·anti-stutter·`New()`), 포트 추출(의존 역전), 에러 래핑/sentinel 정리, `log/slog` 구조적 로깅·경계 단일 로깅, 중복 제거·거대 파일 분할.
+
+Go 품질 기준(코드 스타일·현대화·안전 등)은 `golang-code-style`·`golang-modernize`·`golang-safety` 등 `golang-*` 스킬을 따른다.
 
 ## 제약
 

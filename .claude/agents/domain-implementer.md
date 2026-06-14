@@ -17,7 +17,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 - **`internal/domain` 밖의 파일을 수정하지 않는다.**
 - 다른 내부 레이어(services/interfaces/infrastructure/app)를 **import 하지 않는다.** 웹/DB/직렬화 프레임워크도 금지(표준 라이브러리 + 순수 값 유틸까지만).
 - 만드는 것: 엔티티·값 객체(식별자+불변식+행위 메서드), 도메인 포트 인터페이스(최소 메서드), sentinel 에러(`var ErrXxx = errors.New(...)`), 타입드 식별자.
-- 상태 전이는 검증 후 메서드로만. 네이밍은 풀네임. 규칙 충돌 시 `CLAUDE.md` 우선.
+- 상태 전이는 검증 후 메서드로만. 네이밍·Go 품질은 `golang-*` 스킬(관용 네이밍 등)을 따르고, 프로젝트 고유 규칙은 `CLAUDE.md`.
 
 ## 마무리
 

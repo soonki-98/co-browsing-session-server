@@ -7,7 +7,7 @@ description: Use when improving existing Go code in the co-browsing session serv
 
 겉보기 동작을 바꾸지 않고 코드를 개선한다. **테스트가 안전망**이다.
 
-> 규칙의 단일 출처는 루트 [`CLAUDE.md`](../../../CLAUDE.md)와 레이어 `CLAUDE.md`. 충돌 시 그쪽 우선.
+> Go 품질 기준(코드 스타일·네이밍·현대화·안전·에러)은 `golang-*` 스킬(samber/cc-skills-golang)을 따른다 — `golang-code-style`, `golang-naming`, `golang-modernize`, `golang-safety`, `golang-error-handling`. 프로젝트 고유 규칙은 루트 [`CLAUDE.md`](../../../CLAUDE.md)·레이어 `CLAUDE.md`. 충돌 시 cc 스킬 우선.
 
 ## 안전 프로토콜 (반드시)
 
@@ -20,7 +20,7 @@ description: Use when improving existing Go code in the co-browsing session serv
 ## 카탈로그 (이 프로젝트에서 자주)
 
 - **레이어 위반 교정**: 잘못된 레이어에 있는 로직을 올바른 레이어로 이동(예: 핸들러의 비즈니스 규칙 → services/domain). depguard가 가리키는 의존 위반을 안쪽-지향으로 바로잡는다.
-- **풀네임 리네임**: 축약 receiver/변수(`h`, `repo`, `gen`)를 풀네임(`handler`, `roomSessionRepository`, `generator`)으로. Go 관용보다 프로젝트 규칙 우선.
+- **관용 네이밍 정렬**: `golang-naming` 기준 — 짧은 일관된 receiver, anti-stutter, 단일 주요 타입 생성자 `New()`, MixedCaps. (이전 풀네임 식별자는 만질 때 점진 리네임.)
 - **포트 추출**: 구체 의존을 도메인 포트(인터페이스)로 추출해 의존 역전. 인터페이스는 소비자 쪽 필요 최소로.
 - **에러 처리 정리**: 맥락 없는 에러를 `fmt.Errorf("...: %w", err)`로 래핑, 분기 에러를 sentinel + `errors.Is`로.
 - **로깅 정리**: 산발적 로그를 경계 단일 지점으로, `log/slog` 구조적 로깅 지향. 안쪽 레이어의 이중 로깅 제거.

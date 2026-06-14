@@ -56,14 +56,18 @@ co-browsing 세션 서버 — 고객지원 상담원이 고객 화면을 함께 
 
 ## 네이밍 / 코딩 컨벤션
 
-### 네이밍 — 풀네임 (프로젝트 규칙, 의도적 결정)
+### 네이밍 — Go 관용 (`golang-naming` 스킬 기준)
 
-> Go 관용(짧은 receiver `h`, `svc`)을 **의도적으로 오버라이드**한다. 가독성과 일관성을 위해 이 프로젝트는 풀네임을 쓴다. 새 코드도 반드시 따른다.
+> 네이밍은 **`golang-naming` 스킬**(samber/cc-skills-golang)을 표준으로 따른다. (이전의 "풀네임 오버라이드" 규칙은 **폐기** — cc-skills-golang 기준으로 정렬했다. 기존 코드의 풀네임 식별자는 만질 때 점진적으로 관용 네이밍으로 리네임한다.)
 
-- receiver는 타입을 풀네임으로: `func (handler *Handler)`, `func (roomSessionRepository *RoomSessionRepository)` — `h`, `r`, `repo` 금지
-- 변수도 의미를 드러내는 풀네임: `roomID`, `serialNumberGenerator`, `resolvedInvitation` — `id`, `gen`, `inv` 금지
-- 약어는 통용되는 것만 그대로(`ID`, `HTTP`, `URL`, `TTL`), 그 외는 풀어 쓴다
-- 패키지명은 짧은 소문자 단수형, 언더스코어/복수형 금지(`roomsession`, `hub`) — 이건 Go 표준과 일치
+핵심만:
+- receiver는 1~2자 약어로 일관되게: `func (s *Server)`, `func (h *Handler)` — `this`/`self` 금지, 메서드마다 이름 바꾸지 않기
+- MixedCaps만(언더스코어 금지), 상수도 `MaxRetries`(ALL_CAPS 금지)
+- anti-stutter: `http.Client`(not `http.HTTPClient`), 단일 주요 타입 생성자는 `New()`(not `NewClient()`)
+- 불리언 필드/메서드는 `is`/`has`/`can` 접두사, getter는 `Get` 생략(`user.Name()`)
+- sentinel 에러는 `Err` 접두사 + 메시지에 패키지명 포함(`"roomsession: not found"`), enum zero값은 `Unknown`/`Invalid`
+- 패키지명은 짧은 소문자 단수형(`roomsession`, `hub`), `util`/`helper` 금지
+- 자세한 규칙·예외는 `golang-naming` 스킬과 그 references 참조
 
 ### 에러 처리
 
@@ -89,14 +93,24 @@ co-browsing 세션 서버 — 고객지원 상담원이 고객 화면을 함께 
 
 ## 테스트
 
-- **테이블 기반 테스트**를 기본으로 한다. 케이스는 `name`으로 식별하고 `t.Run`으로 묶는다
-- 동시성 코드는 `go test -race ./...`로 검증한다(Hub 등)
-- 통합 테스트는 `httptest.Server` + 실제 in-memory 구현으로 엔드투엔드 흐름을 확인한다 — 과한 목(mock)보다 실제 조립을 선호한다
-- 단언 실패 메시지는 "무엇이 기대였는지"를 한국어로 명확히 적는다
+테스트 컨벤션은 **`golang-testing` 스킬**(samber/cc-skills-golang)을 표준으로 따른다. 프로젝트에서 특히 지키는 것:
+
+- **테이블 기반 + named subtest**(`t.Run`), 독립 케이스는 `t.Parallel()`
+- 동시성 코드는 `go test -race ./...`로 검증(Hub 등), goroutine 누수는 `goleak` 고려
+- 통합 테스트는 `httptest.Server` + 실제 in-memory 조립으로 엔드투엔드 확인
+- 구현 세부가 아니라 **관찰 가능한 동작/공개 계약**을 검증한다
+- 그 외 패턴(fuzzing, build-tag 분리, coverage 등)은 `golang-testing` 참조
 
 ## OpenAPI (코드-퍼스트)
 
 스펙은 **코드에서 생성**한다(`cmd/gen-openapi`). `docs/openapi.yaml`을 손으로 고치지 않는다. huma 핸들러/DTO를 바꾸면 `make openapi`로 재생성하고, `make openapi-check`가 드리프트를 막는다.
+
+## Go 품질 스킬 (samber/cc-skills-golang)
+
+범용 Go 품질의 표준으로 `.claude/skills/golang-*` 스킬을 설치해 두었다(이 스택에 맞게 큐레이션한 20개: `golang-naming`, `golang-code-style`, `golang-error-handling`, `golang-safety`, `golang-structs-interfaces`, `golang-concurrency`, `golang-context`, `golang-testing`, `golang-design-patterns`, `golang-modernize`, `golang-lint`, `golang-security`, `golang-observability`, `golang-documentation`, `golang-troubleshooting`, `golang-performance`, `golang-data-structures`, `golang-dependency-injection`, `golang-project-layout`, `golang-dependency-management`).
+
+- 네이밍·에러·동시성·컨텍스트·테스트·안전·로깅 등 **언어/생태계 차원의 "어떻게"는 이 스킬들을 따른다.**
+- **충돌 시 cc 스킬이 우선**한다. 이 `CLAUDE.md`는 cc 스킬이 다루지 않는 **이 프로젝트 고유 규칙**(클린 아키텍처 레이어·depguard 의존 방향, huma·`SuccessResponse[T]` 봉투, OpenAPI 코드-퍼스트, WebSocket raw 등록)만 규정한다.
 
 ## 레이어별 규칙
 

@@ -18,7 +18,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 - 모든 레이어를 import할 수 있으나 **비즈니스 로직/유즈케이스 흐름을 두지 않는다.** 여기는 "무엇을 무엇에 꽂을지"만.
 - 조립 순서: domain(순수 값) → infrastructure(포트 구현) → services(유즈케이스) → interfaces(어댑터). 어떤 구현을 쓸지 결정하는 **유일한 지점**이다.
 - huma 핸들러는 라우터에 등록, raw 업그레이드가 필요한 WebSocket은 gin 엔진에 직접 등록. 서버 구동(`Run`)과 엔진 노출(`Engine`)을 분리해 in-process 테스트/OpenAPI 추출을 지원.
-- 네이밍 풀네임. 규칙 충돌 시 `CLAUDE.md` 우선.
+- 네이밍·Go 품질은 `golang-*` 스킬(관용 네이밍 등)을 따른다. 프로젝트 고유 규칙은 `CLAUDE.md`, 충돌 시 cc 스킬 우선.
 
 ## 마무리
 

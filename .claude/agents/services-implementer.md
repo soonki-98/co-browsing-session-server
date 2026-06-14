@@ -18,7 +18,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 - **도메인만 import.** infrastructure **구현체 직접 참조 금지** — 저장소 등은 도메인 포트(인터페이스)를 생성자로 주입받아 쓴다. interfaces/app import 금지.
 - 생성자 주입(`NewXxx(...)`), 전역 상태 금지. 유즈케이스 메서드의 첫 인자는 `ctx context.Context`.
 - **경계 에러 번역**: 도메인 sentinel을 그대로 흘리지 말고, 트랜스포트가 상태 코드로 매핑하기 쉬운 유즈케이스 에러로 변환(예: 여러 도메인 에러 → `ErrInvitationInvalid`).
-- 단일 관심사 서비스와 상위 조율자(코디네이터)를 분리할 수 있다 — 규칙 자체는 도메인에 둔다. 네이밍 풀네임. 규칙 충돌 시 `CLAUDE.md` 우선.
+- 단일 관심사 서비스와 상위 조율자(코디네이터)를 분리할 수 있다 — 규칙 자체는 도메인에 둔다. 네이밍·Go 품질은 `golang-*` 스킬(관용 네이밍 등)을 따르고, 프로젝트 고유 규칙은 `CLAUDE.md`.
 
 ## 마무리
 

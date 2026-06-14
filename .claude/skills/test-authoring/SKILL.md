@@ -7,23 +7,23 @@ description: Use when writing Go tests for the co-browsing session server BEFORE
 
 구현 **전에** 실패하는 테스트를 작성한다. 스펙의 Acceptance Criteria를 테스트 케이스로 옮긴다. **`*_test.go`만 만들고 구현 코드는 건드리지 않는다.**
 
-> 규칙의 단일 출처는 루트 [`CLAUDE.md`](../../../CLAUDE.md)와 레이어 `CLAUDE.md`. 충돌 시 그쪽 우선.
+> 이 스킬은 **TDD RED 워크플로**만 담당한다. *어떻게 좋은 Go 테스트를 쓰는가*(컨벤션·패턴)는 **`golang-testing` 스킬**(samber/cc-skills-golang)을 표준으로 따른다. 충돌 시 cc 스킬 우선. 프로젝트 고유 규칙(huma·레이어 등)은 루트 [`CLAUDE.md`](../../../CLAUDE.md).
 
 ## TDD 규율
 
-일반 TDD 사이클(RED→GREEN→REFACTOR)의 원칙은 superpowers `test-driven-development` 스킬을 따른다. 이 스킬은 그 RED 단계를 **이 프로젝트 컨벤션**으로 구체화한다.
+일반 TDD 사이클(RED→GREEN→REFACTOR)의 원칙은 superpowers `test-driven-development` 스킬을 따른다. 이 스킬은 그 RED 단계를 **이 프로젝트의 스펙→테스트 흐름**으로 구체화한다.
 
 - 한 번에 하나의 행동만 검증하는 테스트부터. 과도하게 큰 테스트를 한꺼번에 만들지 않는다.
 - 테스트는 처음엔 **반드시 실패(또는 컴파일 실패)** 해야 한다 — 구현이 없으니 당연. 통과해버리면 테스트가 무의미한 것.
 - Acceptance Criteria 체크리스트의 각 항목 → 최소 하나의 테스트 케이스.
 
-## 프로젝트 테스트 컨벤션
+## 테스트 컨벤션
 
-- **테이블 기반 + `t.Run`**: 케이스를 슬라이스로 두고 `name`으로 식별, `t.Run(name, ...)`으로 격리.
-- **실패 메시지는 한글로 기대를 명확히**: 예) `t.Fatalf("고객 단독 접속 시 peer는 nil이어야 한다, got %+v", peer)`.
-- **네이밍은 풀네임**(루트 CLAUDE.md): 테스트 내 변수도 `roomSession`, `serialNumber`처럼 축약하지 않는다.
-- **동시성 코드**는 race 테스트를 포함: 다수 goroutine으로 혼합 호출(예: Hub 100 goroutine `JoinRoom`/`LeaveRoom`), `go test -race ./...`로 검증.
-- **과한 mock 금지**: 통합 테스트는 `httptest.Server` + 실제 in-memory 조립(`app.New().Engine()`)으로 엔드투엔드를 확인한다. 헬퍼(`newTestServer`, `createRoom`, `dialWS`, `readMessageType` 등) 패턴을 재사용한다.
+작성 방식은 **`golang-testing` 스킬**을 따른다 — 테이블 기반 + named subtest(`t.Run`), 독립 케이스 `t.Parallel()`, race 검증, `goleak` 누수 탐지, 관찰 가능한 동작 검증(구현 세부 금지). 자세한 패턴은 그 스킬과 references 참조.
+
+이 프로젝트에서 특히:
+- **통합 테스트는 실제 조립**: `httptest.Server` + `app.New().Engine()`. 헬퍼(`newTestServer`, `createRoom`, `dialWS`, `readMessageType` 등) 패턴 재사용.
+- **동시성**(Hub 등)은 다수 goroutine 혼합 호출 + `go test -race`.
 
 ## 레이어별 테스트 형태
 

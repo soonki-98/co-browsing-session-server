@@ -7,7 +7,7 @@ description: Use when implementing a written docs/specs spec into Go code for th
 
 작성된 스펙을 코드로 옮긴다. **테스트 먼저(RED) → 최소 구현(GREEN) → 리팩터링** 순서를 지킨다.
 
-> 규칙의 단일 출처는 루트 [`CLAUDE.md`](../../../CLAUDE.md)와 작업 레이어의 `CLAUDE.md`. 충돌 시 그쪽 우선. 시작 전 해당 레이어 `CLAUDE.md`를 읽는다.
+> 프로젝트 고유 규칙(레이어·huma·OpenAPI)은 루트 [`CLAUDE.md`](../../../CLAUDE.md)와 작업 레이어의 `CLAUDE.md`. 시작 전 해당 레이어 `CLAUDE.md`를 읽는다. **Go 코드 품질(네이밍·에러·동시성·컨텍스트·테스트·안전)은 `golang-*` 스킬**(samber/cc-skills-golang)을 표준으로 따른다 — 충돌 시 cc 스킬 우선.
 
 ## 절차
 

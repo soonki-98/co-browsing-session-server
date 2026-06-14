@@ -17,7 +17,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 
 - **`*_test.go` 파일만 작성/수정한다.** 구현 코드(비-테스트 .go)는 절대 건드리지 않는다.
 - 테스트는 처음엔 반드시 RED여야 한다. 우연히 통과하면 그 테스트는 무의미하므로 다시 설계한다.
-- 컨벤션 준수: 테이블 기반 + `t.Run`, 한글 실패 메시지, 풀네임 변수, 동시성은 race 테스트, 통합은 `httptest`+실제 in-memory(과한 mock 금지).
+- 테스트 컨벤션은 `golang-testing` 스킬을 표준으로 따른다: 테이블 기반 + named subtest(`t.Run`), 독립 케이스 `t.Parallel()`, 동시성은 race + `goleak`, 통합은 `httptest`+실제 in-memory, 관찰 가능한 동작 검증. 네이밍은 `golang-naming`(관용).
 - 규칙 충돌 시 프로젝트 `CLAUDE.md` 우선.
 
 ## 반환
