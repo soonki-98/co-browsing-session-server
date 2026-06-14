@@ -1,17 +1,19 @@
 ---
 name: spec-implementation
-description: Use when implementing a written docs/specs spec into Go code for the co-browsing session server. Drives TDD (make failing tests pass), respects clean-architecture layer rules, and runs the project's test/lint/openapi gates. Shared by the orchestrator and the per-layer implementer agents.
+description: Use when implementing an approved technical design (docs/designs/<요구사항명>/<세부요구사항>.md) into Go code for the co-browsing session server. Drives TDD (make failing tests pass), respects clean-architecture layer rules, and runs the project's test/lint/openapi gates. Shared by the orchestrator and the per-layer implementer agents.
 ---
 
-# spec-implementation — 스펙 기반 구현 (TDD)
+# spec-implementation — 기술 설계 기반 구현 (TDD)
 
-작성된 스펙을 코드로 옮긴다. **테스트 먼저(RED) → 최소 구현(GREEN) → 리팩터링** 순서를 지킨다.
+작성된 **기술 설계도**를 코드로 옮긴다. **테스트 먼저(RED) → 최소 구현(GREEN) → 리팩터링** 순서를 지킨다.
+
+> 구현의 단일 입력은 **기술 설계도**(`docs/designs/<요구사항명>/<세부요구사항>.md`)다 — 레이어 배치·자료구조·포트·File Locations·Test Plan이 거기 있다. 같은 경로의 **기획 스펙**(`docs/specs/...`)은 *왜/무엇을*(FR·비즈니스 룰·AC)을 확인할 때 참조한다. 설계도가 없으면 먼저 `tech-designer`로 작성한다.
 
 > 프로젝트 고유 규칙(레이어·huma·OpenAPI)은 루트 [`CLAUDE.md`](../../../CLAUDE.md)와 작업 레이어의 `CLAUDE.md`. 시작 전 해당 레이어 `CLAUDE.md`를 읽는다. **Go 코드 품질(네이밍·에러·동시성·컨텍스트·테스트·안전)은 `golang-*` 스킬**(samber/cc-skills-golang)을 표준으로 따른다 — 충돌 시 cc 스킬 우선.
 
 ## 절차
 
-1. **스펙 파싱**: Overview/Contracts/Behavior/Acceptance Criteria를 읽고, 만들 유닛과 그 레이어를 식별한다.
+1. **설계도 파싱**: 기술 설계도의 Implementation Order/Layer Mapping/Data Structures/Interfaces·Contracts/Behavior/File Locations/Test Plan을 읽고, 만들 유닛과 그 레이어를 식별한다. 필요 시 기획 스펙의 FR/AC로 의도를 대조한다.
 2. **의존 순서로 분해**: `domain → infrastructure → services → interfaces → app`. 안쪽이 먼저 GREEN이어야 바깥이 주입받을 수 있다.
 3. **유닛마다 TDD 사이클**:
    - **RED**: 실패 테스트가 있어야 한다. 없으면 `test-authoring`(또는 `test-writer` agent)으로 먼저 확보한다. **실패 테스트 없이 구현을 시작하지 않는다.**

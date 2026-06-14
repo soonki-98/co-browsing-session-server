@@ -1,66 +1,82 @@
 ---
 name: spec-authoring
-description: Use when writing a new requirements/implementation spec under docs/specs/ for the co-browsing session server. Produces a docs/specs/NN-*.md document in the project's 8-section template. Output is a spec document, never code.
+description: Use when writing a product/planning requirements spec (기획 요구사항) for the co-browsing session server. Produces a docs/specs/<요구사항명>/<세부요구사항>.md document describing WHAT the product must do — user-observable behavior and business rules, never code or technical design. The technical "how" is a separate step (tech-design-authoring).
 ---
 
-# spec-authoring — 요구사항 스펙 작성
+# spec-authoring — 기획 요구사항 작성
 
-이 프로젝트의 구현 스펙(`docs/specs/NN-*.md`)을 정해진 템플릿으로 작성한다. **출력은 문서이고, 코드를 만들지 않는다.**
+이 스킬은 **기획 관점의 요구사항**을 문서로 옮긴다. *무엇을* 만들지(사용자가 관찰하는 행동·비즈니스 규칙)에만 집중하고, *어떻게* 구현할지(레이어·타입·포트·동시성)는 다루지 않는다. 기술 설계는 별도 스킬 **`tech-design-authoring`**(에이전트 `tech-designer`)이 이 문서를 입력으로 받아 작성한다.
 
-> 프로젝트 규칙의 단일 출처는 루트 [`CLAUDE.md`](../../../CLAUDE.md)와 각 레이어 `CLAUDE.md`다. 규칙이 충돌하면 항상 그쪽을 따른다.
+> **출력은 기획 문서이고, 코드도 기술 설계도 만들지 않는다.** Go 코드 블록·import·레이어·depguard·포트 인터페이스가 이 문서에 들어가면 안 된다 — 그건 기술 설계도의 몫이다.
+
+## 파일 위치 / 네이밍
+
+```
+docs/specs/<요구사항명>/<세부요구사항>.md
+```
+
+- `<요구사항명>` = 기능군(제품 관점의 묶음). 예: `세션-생성`, `원격-제어`, `댓글작성`.
+- `<세부요구사항>` = 그 안의 한 요구사항 단위. 예: `시리얼로_세션_생성.md`, `제어_이벤트_중계.md`.
+- 한 `<요구사항명>` 폴더 안에 세부 문서가 여러 개일 수 있다. 한 문서는 한 가지 요구사항만 다룬다(커지면 쪼갠다).
+- 같은 경로가 `docs/designs/<요구사항명>/<세부요구사항>.md` 로 미러되어 기술 설계도가 생긴다 — 파일명을 정할 때 이 1:1 미러를 의식한다.
 
 ## 먼저 (의도 도출)
 
-무엇을 만들지 아직 모호하면, 일반적인 아이디어→설계 정리는 superpowers `brainstorming` 스킬에 위임한다. 이 스킬은 **합의된 요구사항을 프로젝트 스펙 포맷으로 옮기는 단계**를 담당한다.
+무엇을 만들지 아직 모호하면, 아이디어→요구사항 정리는 superpowers `brainstorming` 스킬에 위임한다. 이 스킬은 **합의된 기획 의도를 프로젝트 기획 스펙 포맷으로 옮기는 단계**를 담당한다.
 
-기존 스펙을 먼저 읽어 번호·스타일·의존 관계를 맞춘다:
-- `docs/specs/` 목록을 확인하고 다음 번호(`NN`)를 정한다.
-- `docs/specs/01-session-store.md`를 레퍼런스 포맷으로 삼는다.
-- `docs/requirements.md`로 전체 맥락(세션 흐름, WS 프로토콜)을 확인한다.
+맥락을 먼저 읽는다:
+- `docs/requirements.md` — 전체 제품 맥락(세션 흐름, 역할: 고객/상담원).
+- `docs/specs/` 의 기존 기획 스펙 — 톤·구조·용어를 맞춘다.
 
-## 템플릿 (8섹션, 순서 고정)
+## 템플릿
 
 ```markdown
-# NN. <제목> Spec
+# <기능명> — 기획 요구사항
 
-## Overview
-2~3문장으로 목표. 전체 N단계 중 몇 번째인지, 왜 이 묶음인지.
+## 배경 / 목적
+왜 이 기능이 필요한가, 어떤 사용자 문제를 푸는가. 2~4문장.
 
-## Implementation Order
-ASCII 트리로 선행/후행 의존성. "← 지금 여기" 표시. 선행/후행 의존성 불릿.
+## 용어
+이 문서에서 쓰는 도메인 용어 정의(필요 시). 예: 시리얼 코드, 룸 세션, 상담원/고객.
 
-## Dependencies
-실제 import 블록(파일 경로 주석 포함). 신규 외부 패키지(`go get ...`). 변경 없는 패키지 명시.
+## 사용자 스토리 / 시나리오
+- <역할>로서 <목표>를 위해 <행동>을 한다.
+주요 흐름을 누가→무엇을→결과 순으로. 필요하면 간단한 ASCII 플로우(사용자 관점).
 
-## Data Structures
-레이어별 Go 코드 블록(엔티티·값 객체·구조체). 파일 경로 주석 필수.
+## 기능 요구사항 (FR)
+"시스템은 ~해야 한다" 형태의 번호 목록. **기술 무관** — 프레임워크/DB/레이어/타입 언급 금지.
+- FR-1. ...
+- FR-2. ...
 
-## Interfaces / Contracts
-도메인 포트 인터페이스, 도메인 행동 메서드 시그니처, 상수.
+## 규칙 / 제약 (비즈니스 룰)
+도메인 규칙·정책·엣지 케이스를 제품 관점으로.
+예: 시리얼은 1회용, 발급 후 N분 뒤 만료, 양쪽이 합류하기 전엔 대기 상태.
 
-## Behavior
-상태 머신(ASCII), TTL/만료 규칙, 에러 타입(sentinel) 정의, 동시성 전략.
+## 비기능 요구사항 (NFR)
+성능·동시성 기대·보안/프라이버시를 사용자·운영 관점으로.
+예: 시리얼 코드·토큰은 로그에 남기지 않는다, 여러 세션이 동시에 안전하게 동작한다.
 
-## File Locations
-| 작업 | 파일 |  ← 신규 생성 / 수정 / 삭제 를 표로
+## 인수 조건 (Acceptance Criteria)
+Given/When/Then 또는 입력→기대 결과. **관찰 가능한 행동**으로만 — 내부 타입/레이어/함수명 금지.
+- [ ] AC-1. (Given ...) (When ...) (Then ...)
+- [ ] AC-2. ...
 
-## Acceptance Criteria
-레이어별 그룹. `- [ ]` 체크리스트. 입력→기대결과 형태로 구체적으로.
-동시성 항목은 반드시 `go test -race` 명시.
+## 미해결 질문 (Open Questions)
+기획상 더 정해야 할 것(선택). 없으면 생략.
 ```
 
 ## 작성 규칙
 
-- **언어**: 영문 섹션 제목 + 한글 서술(레퍼런스 스펙과 동일). 코드 블록은 Go.
-- **레이어 매핑**: Data Structures/Contracts를 clean architecture 레이어에 정확히 배치한다(domain/services/interfaces/infrastructure). 의존 방향은 루트 `CLAUDE.md`의 표를 따른다 — 안쪽을 향하지 않는 의존이 스펙에 들어가지 않게 한다.
-- **Implementation Order**는 항상 의존 순서(domain → infrastructure → services → interfaces → app)와 일치해야 한다.
-- **Acceptance Criteria는 테스트 가능하게** 쓴다. 이 체크리스트가 뒤에 `test-authoring`에서 테스트 케이스로 1:1 매핑되므로, 각 항목은 "이 입력에 이 결과/에러"로 검증 가능해야 한다.
-- 에러는 sentinel(`var ErrXxx = errors.New(...)`)로 명세하고, 어느 레이어가 어떤 에러를 반환/번역하는지 적는다.
+- **언어**: 한글 서술, 제목은 한글. 코드 블록 없음.
+- **추상화 수준**: 사용자·운영자가 읽고 이해할 수 있어야 한다. "huma 핸들러", "in-memory repository", "sentinel 에러" 같은 표현이 들어가면 추상화가 잘못된 것 — 기술 설계도로 내려보낸다.
+- **FR/AC에 번호를 매긴다**(FR-n, AC-n). 이 번호가 기술 설계도(Traceability)와 테스트로 추적되는 앵커다.
+- **AC는 테스트 가능하게**: 각 항목이 "이 상황에서 이 결과/거부"로 검증 가능해야 한다. 단, 검증 *방법*(레이어/테스트 종류)은 기술 설계도가 정한다.
+- 비즈니스 규칙의 분기(거부/만료/충돌 등)는 사용자가 보는 결과로 적는다(에러 타입명이 아니라 "거부된다/만료 안내를 받는다").
 
 ## 자기 점검 (작성 후)
 
-- [ ] 8섹션 모두 있고 빈 자리(TBD/placeholder) 없음
-- [ ] Implementation Order가 의존 순서와 모순 없음
-- [ ] File Locations의 경로가 실제 패키지 구조와 일치
-- [ ] 모든 Acceptance Criteria가 테스트로 옮길 수 있을 만큼 구체적
-- [ ] 레이어 의존 방향이 depguard 규칙을 위반하지 않음
+- [ ] 기술 용어(레이어/타입/포트/import/프레임워크)가 본문에 없다 — 순수 기획이다
+- [ ] FR·AC에 번호가 있고, 빈 자리(TBD/placeholder)가 없다
+- [ ] 모든 AC가 관찰 가능한 행동으로 쓰여 테스트로 옮길 수 있다
+- [ ] 파일이 `docs/specs/<요구사항명>/<세부요구사항>.md` 위치에 있고, 한 문서가 한 요구사항만 다룬다
+- [ ] 규칙 충돌 시 루트 [`CLAUDE.md`](../../../CLAUDE.md)가 우선임을 위반하지 않는다

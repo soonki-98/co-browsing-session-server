@@ -1,11 +1,13 @@
 ---
 name: test-authoring
-description: Use when writing Go tests for the co-browsing session server BEFORE implementation (TDD red step). Turns a spec's Acceptance Criteria into failing table-driven tests following the project's testing conventions. Output is *_test.go files only.
+description: Use when writing Go tests for the co-browsing session server BEFORE implementation (TDD red step). Turns the planning spec's Acceptance Criteria + the technical design's Test Plan into failing table-driven tests following the project's testing conventions. Output is *_test.go files only.
 ---
 
 # test-authoring — 테스트 먼저 작성 (TDD RED)
 
-구현 **전에** 실패하는 테스트를 작성한다. 스펙의 Acceptance Criteria를 테스트 케이스로 옮긴다. **`*_test.go`만 만들고 구현 코드는 건드리지 않는다.**
+구현 **전에** 실패하는 테스트를 작성한다. **기획 스펙의 인수 조건(AC-n)**을 검증 대상으로 삼고, **기술 설계도의 Test Plan/Traceability**가 각 AC를 어느 레이어의 어떤 테스트로 옮길지 알려준다. **`*_test.go`만 만들고 구현 코드는 건드리지 않는다.**
+
+> 입력 두 개: 기획 스펙(`docs/specs/<요구사항명>/<세부요구사항>.md` — *무엇을* 검증하나, AC-n) + 기술 설계도(`docs/designs/<요구사항명>/<세부요구사항>.md` — *어느 레이어에서 어떻게* 검증하나). 설계도의 Test Plan이 비어 있으면 먼저 `tech-designer`로 보강한다.
 
 > 이 스킬은 **TDD RED 워크플로**만 담당한다. *어떻게 좋은 Go 테스트를 쓰는가*(컨벤션·패턴)는 **`golang-testing` 스킬**(samber/cc-skills-golang)을 표준으로 따른다. 충돌 시 cc 스킬 우선. 프로젝트 고유 규칙(huma·레이어 등)은 루트 [`CLAUDE.md`](../../../CLAUDE.md).
 
@@ -15,7 +17,7 @@ description: Use when writing Go tests for the co-browsing session server BEFORE
 
 - 한 번에 하나의 행동만 검증하는 테스트부터. 과도하게 큰 테스트를 한꺼번에 만들지 않는다.
 - 테스트는 처음엔 **반드시 실패(또는 컴파일 실패)** 해야 한다 — 구현이 없으니 당연. 통과해버리면 테스트가 무의미한 것.
-- Acceptance Criteria 체크리스트의 각 항목 → 최소 하나의 테스트 케이스.
+- 기획 AC(AC-n)의 각 항목 → 최소 하나의 테스트 케이스. 설계도 Test Plan이 지정한 레이어/테스트 종류로 배치한다.
 
 ## 테스트 컨벤션
 

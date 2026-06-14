@@ -1,6 +1,6 @@
 ---
 name: test-writer
-description: Use to write failing Go tests BEFORE implementation (TDD red step) for the co-browsing session server, derived from a spec's Acceptance Criteria. Writes *_test.go files only; never writes implementation code.
+description: Use to write failing Go tests BEFORE implementation (TDD red step) for the co-browsing session server, derived from the planning spec's Acceptance Criteria and the technical design's Test Plan. Writes *_test.go files only; never writes implementation code.
 tools: Read, Write, Edit, Grep, Glob, Bash
 ---
 
@@ -9,7 +9,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash
 ## 작업 방식
 
 1. **`test-authoring` 스킬을 호출**해 그 컨벤션을 따른다.
-2. 대상 스펙(`docs/specs/NN-*.md`)의 **Acceptance Criteria 각 항목 → 테스트 케이스**로 옮긴다.
+2. **기획 스펙**(`docs/specs/<요구사항명>/<세부요구사항>.md`)의 **인수 조건(AC-n) 각 항목 → 테스트 케이스**로 옮기되, **기술 설계도**(`docs/designs/<요구사항명>/<세부요구사항>.md`)의 Test Plan/Traceability가 지정한 레이어·테스트 종류로 배치한다.
 3. 해당 레이어의 `CLAUDE.md`와 기존 테스트(`internal/services/hub/hub_test.go`, `internal/app/integration_test.go` 등)의 스타일을 참고한다.
 4. 작성 후 `go test ./<패키지>/...` 또는 `go build ./...`로 **의도대로 실패/미컴파일**임을 확인한다.
 
