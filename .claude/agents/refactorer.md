@@ -1,6 +1,6 @@
 ---
 name: refactorer
-description: Use to refactor existing Go code in the co-browsing session server without changing behavior — extract, rename to full-word names, move logic to the correct layer, introduce ports, remove duplication. Keeps tests green and respects layer rules.
+description: Use to refactor existing Go code in the co-browsing session server without changing behavior — extract, rename toward idiomatic Go names (golang-naming), move logic to the correct layer, introduce ports, remove duplication. Keeps tests green and respects layer rules.
 tools: Read, Edit, Write, Grep, Glob, Bash
 ---
 

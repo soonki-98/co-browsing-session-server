@@ -23,6 +23,22 @@ co-browsing 세션 서버 — 고객지원 상담원이 고객 화면을 함께 
 
 커밋 전 최소 `go test ./...`와 `golangci-lint run`을 통과시킨다. 엔드포인트/DTO를 바꾼 경우 `make openapi`로 `docs/openapi.yaml`을 재생성해 함께 커밋한다.
 
+## 개발 워크플로 — 기획 → 기술 설계 → 구현(TDD) → 검증
+
+기능 개발은 **두 단계 문서**를 거쳐 **TDD**로 구현한다. 각 단계는 전용 스킬·에이전트가 담당한다(`.claude/skills/`, `.claude/agents/`). 이 문서들은 규칙을 재서술하지 않고 이 `CLAUDE.md`와 레이어 `CLAUDE.md`를 단일 출처로 참조한다.
+
+1. **기획 요구사항** — `docs/specs/<요구사항명>/<세부요구사항>.md`. *무엇을*: 사용자 관찰 행동·비즈니스 규칙·번호가 매겨진 FR/AC. 기술 용어 없음. → 스킬 `spec-authoring`, 에이전트 `spec-writer`.
+2. **기술 설계도** — `docs/designs/<요구사항명>/<세부요구사항>.md`(기획과 같은 경로 미러). *어떻게*: 레이어 배치·자료구조·포트·에러/동시성·File Locations·Test Plan + 기획 FR/AC로 되돌리는 Traceability. → 스킬 `tech-design-authoring`, 에이전트 `tech-designer`.
+3. **구현(TDD)** — 설계도를 입력으로, 유닛마다 `test-writer`(실패 테스트 RED) → `<layer>-implementer`(최소 구현 GREEN) → 필요 시 `refactorer`. 여러 레이어가 걸치면 `implementation-orchestrator`가 레이어·의존순서·위임 계획을 산출한다(subagent는 중첩 불가 — 실제 디스패치는 메인 스레드). → 스킬 `spec-implementation`, `test-authoring`.
+4. **검증** — `verifier`가 자율 루프(`/loop code-verification`)로 build/test/race/lint/openapi 게이트를 완료조건까지 반복. → 스킬 `code-verification`.
+
+```
+spec-writer ─▶ tech-designer ─▶ [orchestrator] ─▶ test-writer(RED) ─▶ <layer>-implementer(GREEN) ─▶ refactorer ─▶ verifier(/loop)
+ docs/specs      docs/designs                         *_test.go            internal/<layer>
+```
+
+> 범용 Go 품질의 "어떻게"(네이밍·에러·동시성·테스트 등)는 아래 "Go 품질 스킬"의 `golang-*` 스킬을 따른다. 충돌 시 cc 스킬 우선.
+
 ## 아키텍처 — 레이어드 의존 규칙
 
 이 프로젝트는 클린 아키텍처의 **의존 규칙(Dependency Rule)**을 따른다: **의존은 항상 안쪽(도메인)을 향한다.** 바깥 레이어는 안쪽을 알지만, 안쪽은 바깥을 모른다. 레이어 경계는 인터페이스(포트)로 끊고, 구체 구현은 컴포지션 루트에서 주입한다(의존성 역전, 포트 & 어댑터).

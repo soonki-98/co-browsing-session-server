@@ -1,6 +1,6 @@
 ---
 name: code-refactoring
-description: Use when improving existing Go code in the co-browsing session server without changing behavior — extracting functions, moving logic to the correct layer, renaming to full-word names, introducing ports, removing duplication. Keeps tests green and respects depguard layer rules.
+description: Use when improving existing Go code in the co-browsing session server without changing behavior — extracting functions, moving logic to the correct layer, aligning to idiomatic Go naming (golang-naming), introducing ports, removing duplication. Keeps tests green and respects depguard layer rules.
 ---
 
 # code-refactoring — 동작 보존 리팩터링

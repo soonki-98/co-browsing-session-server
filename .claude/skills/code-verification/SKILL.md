@@ -1,11 +1,11 @@
 ---
 name: code-verification
-description: Use to verify the co-browsing session server end-to-end and iteratively fix issues until clean — designed to run inside an autonomous loop (/goal, or /loop code-verification). Defines an explicit goal and completion criteria so the loop knows when to stop.
+description: Use to verify the co-browsing session server end-to-end and iteratively fix issues until clean — designed to run inside an autonomous loop (/loop code-verification, or /goal where that command exists). Defines an explicit goal and completion criteria so the loop knows when to stop.
 ---
 
 # code-verification — 무한 검증 루프
 
-코드 전체를 검증하고, 발견된 문제를 고치고, 다시 검증한다. **완료조건을 만족할 때까지 반복**한다. 자율 루프(`/goal` 또는 `/loop code-verification`)가 이 스킬을 반복 구동한다.
+코드 전체를 검증하고, 발견된 문제를 고치고, 다시 검증한다. **완료조건을 만족할 때까지 반복**한다. 자율 루프(`/loop code-verification`, 환경에 `/goal`이 있으면 `/goal`)가 이 스킬을 반복 구동한다.
 
 > 규칙의 단일 출처는 루트 [`CLAUDE.md`](../../../CLAUDE.md)와 레이어 `CLAUDE.md`. 충돌 시 그쪽 우선.
 
@@ -40,4 +40,4 @@ description: Use to verify the co-browsing session server end-to-end and iterati
 
 ## 실행
 
-- 자율 루프: `/goal`(사용자 환경에 있으면) 또는 `/loop code-verification`(self-paced). 어느 쪽이든 이 스킬 한 라운드를 반복하며, 완료조건에서 스스로 멈춘다.
+- 자율 루프: `/loop code-verification`(self-paced) 또는 `/goal`(사용자 환경에 있으면). 어느 쪽이든 이 스킬 한 라운드를 반복하며, 완료조건에서 스스로 멈춘다.
