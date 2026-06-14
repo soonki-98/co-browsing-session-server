@@ -28,7 +28,7 @@ description: Use to verify the co-browsing session server end-to-end and iterati
 2. **발견 수집** — 실패/경고/리뷰 지적을 목록화. 각 항목에 원인 가설.
 3. **수정** — 한 번에 하나씩 고친다. 동작 변경 없는 정리는 `code-refactoring`, 버그는 superpowers `systematic-debugging`(+`golang-troubleshooting`), 누락 구현은 `spec-implementation`(테스트 먼저)으로. lint/품질 지적은 `golang-lint`·`golang-*` 스킬 기준으로 해소.
 4. **재검증** — 게이트 재실행. 고친 게 회귀를 만들지 않았는지 확인.
-5. **셀프리뷰** — "놓친 게 있나: 검증 안 된 경로, 빠진 테스트, 레이어 경계, 미세 경합?" 새 이슈가 있으면 다음 라운드로, 없으면 카운트 증가.
+5. **셀프리뷰** — "놓친 게 있나: 검증 안 된 경로, 빠진 테스트, 레이어 경계, 미세 경합, 프로덕션 코드의 설명형 주석(=리팩터링 신호; 예외 테스트·DTO/스펙)?" 새 이슈가 있으면 다음 라운드로, 없으면 카운트 증가.
 6. **정지 판단** — 완료조건 충족 + 연속 2라운드 새 이슈 0 → 정지하고 최종 보고. 아니면 다음 라운드.
 
 마무리 보고는 superpowers `verification-before-completion` 규율을 따른다 — **증거(명령 출력) 먼저, 주장은 그다음.** 통과를 증명 없이 단언하지 않는다.
